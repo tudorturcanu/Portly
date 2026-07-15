@@ -11,6 +11,8 @@ import SwiftUI
 struct PortlyApp: App {
     @State private var monitor = PortMonitor()
     @AppStorage("showMenuBarCount") private var showMenuBarCount = true
+    @AppStorage("showSystemProcesses") private var showSystemProcesses = false
+    @AppStorage("showUDPPorts") private var showUDPPorts = false
 
     init() {
         // Menu bar apps are invisible on launch: first launch gets the
@@ -39,6 +41,14 @@ struct PortlyApp: App {
         }
     }
 
+    private var menuBarCount: Int {
+        monitor.ports.count { port in
+            let matchesSystem = showSystemProcesses || !port.isSystemProcess
+            let matchesProtocol = showUDPPorts || port.networkProtocol == .tcp
+            return matchesSystem && matchesProtocol
+        }
+    }
+
     @ViewBuilder
     private var menuBarLabel: some View {
         if monitor.deadPinnedPorts.isEmpty {
@@ -48,8 +58,8 @@ struct PortlyApp: App {
             Image(systemName: "exclamationmark.triangle.fill")
         }
 
-        if showMenuBarCount, monitor.devServerCount > 0 {
-            Text(verbatim: "\(monitor.devServerCount)")
+        if showMenuBarCount, menuBarCount > 0 {
+            Text(verbatim: "\(menuBarCount)")
         }
     }
 }

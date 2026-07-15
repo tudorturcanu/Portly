@@ -44,7 +44,12 @@ private struct GeneralSettingsTab: View {
 
             Section {
                 LabeledContent("Version", value: version)
-                Link("View Portly on GitHub", destination: URL(string: "https://github.com/tudorturcanu/Portly")!)
+            }
+
+            Section("Legal & Support") {
+                Link("Support & FAQ", destination: URL(string: "https://sudoswisshub.github.io/PortlyLegal/support.html")!)
+                Link("Terms of Service", destination: URL(string: "https://sudoswisshub.github.io/PortlyLegal/terms.html")!)
+                Link("Privacy Policy", destination: URL(string: "https://sudoswisshub.github.io/PortlyLegal/privacy.html")!)
             }
         }
         .formStyle(.grouped)

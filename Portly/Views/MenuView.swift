@@ -146,7 +146,10 @@ struct MenuView: View {
 
             Divider()
 
-            Link("About Portly", destination: URL(string: "https://github.com/tudorturcanu/Portly")!)
+            Button("About Portly") {
+                AboutWindow.show()
+                NSApp.activate(ignoringOtherApps: true)
+            }
 
             Divider()
 

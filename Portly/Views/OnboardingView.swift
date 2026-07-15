@@ -59,6 +59,18 @@ struct OnboardingView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
+
+            HStack(spacing: 8) {
+                Link("Terms", destination: URL(string: "https://sudoswisshub.github.io/PortlyLegal/terms.html")!)
+                Text("•")
+                    .foregroundStyle(.secondary)
+                Link("Privacy", destination: URL(string: "https://sudoswisshub.github.io/PortlyLegal/privacy.html")!)
+                Text("•")
+                    .foregroundStyle(.secondary)
+                Link("Support", destination: URL(string: "https://sudoswisshub.github.io/PortlyLegal/support.html")!)
+            }
+            .font(.caption)
+            .padding(.top, 4)
         }
         .padding(28)
         .frame(width: 420)
