@@ -9,14 +9,11 @@ import SwiftUI
 struct MenuView: View {
     var monitor: PortMonitor
 
+    @Environment(\.openSettings) private var openSettings
+
     @AppStorage("showSystemProcesses") private var showSystemProcesses = false
     @AppStorage("showUDPPorts") private var showUDPPorts = false
-    @AppStorage("showMenuBarCount") private var showMenuBarCount = true
-    @AppStorage(PortNotifier.defaultsKey) private var notifyPortChanges = false
-    @AppStorage(PortMonitor.probeDefaultsKey) private var probeLocalhostHTTP = false
-    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
     @State private var searchText = ""
-    @State private var launchAtLogin = false
     @State private var listHeight = 0.0
     @State private var confirmingStopAll = false
 
@@ -73,12 +70,6 @@ struct MenuView: View {
                     .padding(.top, 8)
             }
 
-            if !hasSeenWelcome {
-                welcomeCard
-                    .padding(.horizontal, 8)
-                    .padding(.top, 8)
-            }
-
             if hasListContent {
                 portList
             } else {
@@ -102,9 +93,6 @@ struct MenuView: View {
             }
         } message: {
             Text("Sends SIGTERM to every non-system process of yours with a listening TCP port.")
-        }
-        .onAppear {
-            launchAtLogin = LaunchAtLogin.isEnabled
         }
         .task {
             // Fast refresh while the panel is open; PortMonitor keeps its own
@@ -138,17 +126,11 @@ struct MenuView: View {
 
     private var settingsMenu: some View {
         Menu {
-            Toggle("Launch at Login", isOn: $launchAtLogin)
-            Toggle("Show Count in Menu Bar", isOn: $showMenuBarCount)
-            Toggle("Notify on Port Changes", isOn: $notifyPortChanges)
-
-            Divider()
-
-            Toggle("Show macOS System Processes", isOn: $showSystemProcesses)
-            Toggle("Show UDP Ports", isOn: $showUDPPorts)
-            Toggle("Probe localhost for HTTP Health", isOn: $probeLocalhostHTTP)
-
-            Divider()
+            Button("Settings…", systemImage: "gearshape") {
+                openSettings()
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            .keyboardShortcut(",", modifiers: .command)
 
             Divider()
 
@@ -176,24 +158,6 @@ struct MenuView: View {
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
-        .onChange(of: launchAtLogin) { _, newValue in
-            guard newValue != LaunchAtLogin.isEnabled else { return }
-            do {
-                try LaunchAtLogin.set(newValue)
-            } catch {
-                launchAtLogin = LaunchAtLogin.isEnabled
-                monitor.statusMessage = "Launch at Login failed: \(error.localizedDescription)"
-            }
-        }
-        .onChange(of: notifyPortChanges) { _, enabled in
-            guard enabled else { return }
-            Task {
-                if await !PortNotifier.requestPermission() {
-                    notifyPortChanges = false
-                    monitor.statusMessage = "Notifications are disabled — enable them in System Settings."
-                }
-            }
-        }
     }
 
     private var searchField: some View {
@@ -264,26 +228,6 @@ struct MenuView: View {
             .padding(.bottom, 2)
     }
 
-    private var welcomeCard: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Label("Welcome to Portly", systemImage: "sparkles")
-                .font(.callout.weight(.semibold))
-
-            Text("Everything listening on a port, live. Hover a row to open, copy, or stop it — right-click to pin a port you care about.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button("Got It") {
-                hasSeenWelcome = true
-            }
-            .controlSize(.small)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .background(.quaternary.opacity(0.4), in: .rect(cornerRadius: 8))
-    }
-
     private var emptyState: some View {
         ContentUnavailableView {
             Label(emptyStateTitle, systemImage: searchText.isEmpty ? "moon.zzz" : "magnifyingglass")
@@ -303,7 +247,7 @@ struct MenuView: View {
         } else if showSystemProcesses {
             "Nothing is listening on this Mac right now."
         } else {
-            "No dev servers are listening right now. System processes are hidden — show them from the gear menu."
+            "No dev servers are listening right now. System processes are hidden — show them in Settings."
         }
     }
 

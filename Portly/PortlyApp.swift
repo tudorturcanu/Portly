@@ -12,6 +12,20 @@ struct PortlyApp: App {
     @State private var monitor = PortMonitor()
     @AppStorage("showMenuBarCount") private var showMenuBarCount = true
 
+    init() {
+        // Menu bar apps are invisible on launch: first launch gets the
+        // onboarding window, every later launch gets a brief toast.
+        Task { @MainActor in
+            if OnboardingWindow.isNeeded {
+                try? await Task.sleep(for: .milliseconds(300))
+                OnboardingWindow.showIfNeeded()
+            } else {
+                try? await Task.sleep(for: .milliseconds(600))
+                LaunchToast.show()
+            }
+        }
+    }
+
     var body: some Scene {
         MenuBarExtra {
             MenuView(monitor: monitor)
@@ -19,6 +33,10 @@ struct PortlyApp: App {
             menuBarLabel
         }
         .menuBarExtraStyle(.window)
+
+        Settings {
+            SettingsView(monitor: monitor)
+        }
     }
 
     @ViewBuilder
