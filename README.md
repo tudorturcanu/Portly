@@ -45,11 +45,7 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 
 Download the latest `.dmg` from [Releases](../../releases) and drag Portly into `/Applications`.
 
-The direct-download build uses `lsof` to scan ports and can stop processes directly from the UI.
-
-### Mac App Store
-
-The App Store build is sandboxed. It reads the kernel socket tables via `sysctl` instead of `lsof`, which means it cannot signal other processes. In that build, the Stop button is replaced by a "Copy kill command" action so you can paste it into Terminal.
+The default build uses `lsof` to scan ports and can stop processes directly from the UI.
 
 ### Build from source
 
@@ -61,8 +57,14 @@ open Portly.xcodeproj
 
 Select the **Portly** scheme, choose your Mac as the run destination, and press **⌘R**.
 
-> [!NOTE]
-> The `APPSTORE` Swift flag switches between the `lsof` backend (direct download) and the `sysctl` backend (App Store). The flag is not set in the default Debug scheme, so local builds behave like the direct-download release.
+---
+
+## Sandboxed Mode vs. Standard Mode
+
+Portly supports two execution modes:
+
+- **Standard Mode (Default)**: Uses `lsof` to scan ports and resolves Docker container names. It allows terminating processes directly from the UI using the Stop button (or holding `⌥` to force-kill).
+- **Sandboxed Mode**: Activated by building with the `APPSTORE` compilation flag (e.g., if you run Portly inside an App Sandbox). Since sandboxed applications cannot inspect other processes via `lsof` or signal them directly, this mode reads kernel socket tables via `sysctl` and replaces the Stop button with a "Copy kill command" helper that copies the command to your clipboard.
 
 ---
 
@@ -78,7 +80,7 @@ Select the **Portly** scheme, choose your Mac as the run destination, and press 
    - Copy PID
    - Reveal executable in Finder
    - Pin / Unpin
-   - Stop / Force Kill (direct-download build)
+   - Stop / Force Kill (Standard mode) or Copy kill command (Sandboxed mode)
 5. **Settings** — open via the gear icon → Settings… (⌘,):
    - *General* — Launch at Login, menu bar badge count
    - *Filtering* — show/hide macOS system processes and UDP ports
@@ -92,8 +94,8 @@ Select the **Portly** scheme, choose your Mac as the run destination, and press 
 Portly/
 ├── Models/
 │   ├── PortMonitor.swift        # Observable state: ports, pinned, ghosts, health
-│   ├── PortScanner.swift        # lsof backend (direct-download)
-│   ├── SysctlPortScanner.swift  # sysctl backend (App Store / sandbox)
+│   ├── PortScanner.swift        # lsof backend (Standard mode)
+│   ├── SysctlPortScanner.swift  # sysctl backend (Sandboxed mode)
 │   ├── DockerResolver.swift     # Maps Docker proxy ports → container names
 │   ├── ListeningPort.swift      # Core value type for a listening socket
 │   ├── ClosedPort.swift         # Ghost record for recently-closed ports
@@ -101,7 +103,7 @@ Portly/
 │   ├── PortNotifier.swift       # System notification posting
 │   ├── ProcessInspector.swift   # Reads CPU time, memory, argv via libproc
 │   ├── ProcessDetails.swift     # Value type returned by ProcessInspector
-│   ├── AppCapabilities.swift    # Compile-time direct-download vs. sandbox flags
+│   ├── AppCapabilities.swift    # Compile-time Standard vs. Sandboxed flags
 │   └── LaunchAtLogin.swift      # SMAppService wrapper
 └── Views/
     ├── MenuView.swift           # Main panel (search, port list, footer)
@@ -119,9 +121,9 @@ Portly/
 
 ### How scanning works
 
-**Direct-download build** — `PortScanner` runs `/usr/sbin/lsof -nP -iTCP -iUDP +c 0 -FpcLnPT` asynchronously and parses the field-per-line output. It then enriches each entry with the full executable path via `proc_pidpath`, and resolves Docker port-proxy entries to container names by calling `docker ps --format '{{json .}}'`.
+**Standard Mode** — `PortScanner` runs `/usr/sbin/lsof -nP -iTCP -iUDP +c 0 -FpcLnPT` asynchronously and parses the field-per-line output. It then enriches each entry with the full executable path via `proc_pidpath`, and resolves Docker port-proxy entries to container names by calling `docker ps --format '{{json .}}'`.
 
-**App Store build** — `SysctlPortScanner` reads `net.inet.tcp.pcblist_n` and `net.inet.udp.pcblist_n` directly from the kernel via `sysctl`. It parses the binary `xinpcb_n` / `xsocket_n` / `xtcpcb_n` structures to extract local ports, PIDs, and TCP states, then resolves process names and executable paths with `proc_pidpath`.
+**Sandboxed Mode** — `SysctlPortScanner` reads `net.inet.tcp.pcblist_n` and `net.inet.udp.pcblist_n` directly from the kernel via `sysctl` (activated when compiling with the `APPSTORE` flag). It parses the binary `xinpcb_n` / `xsocket_n` / `xtcpcb_n` structures to extract local ports, PIDs, and TCP states, then resolves process names and executable paths with `proc_pidpath`.
 
 Both backends return the same `[ListeningPort]` array, deduplicated per `pid:port:protocol`. `PortMonitor` owns the list, runs the refresh loop, tracks ghost ports, fires notifications, and runs the optional HTTP health probe.
 
