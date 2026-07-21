@@ -8,7 +8,7 @@
 
 /* Begin PBXFileReference section */
 		1C7DC2EA3004CC9B001D7951 /* Portly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portly.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AAAA00000000000000000008 /* Portly App Store.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Portly App Store.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAAA00000000000000000008 /* Portly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -49,7 +49,7 @@
 			isa = PBXGroup;
 			children = (
 				1C7DC2EA3004CC9B001D7951 /* Portly.app */,
-				AAAA00000000000000000008 /* Portly App Store.app */,
+				AAAA00000000000000000008 /* Portly.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,9 +79,9 @@
 			productReference = 1C7DC2EA3004CC9B001D7951 /* Portly.app */;
 			productType = "com.apple.product-type.application";
 		};
-		AAAA00000000000000000001 /* Portly App Store */ = {
+		AAAA00000000000000000001 /* Portly (Sandboxed) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AAAA00000000000000000002 /* Build configuration list for PBXNativeTarget "Portly App Store" */;
+			buildConfigurationList = AAAA00000000000000000002 /* Build configuration list for PBXNativeTarget "Portly (Sandboxed)" */;
 			buildPhases = (
 				AAAA00000000000000000005 /* Sources */,
 				AAAA00000000000000000006 /* Frameworks */,
@@ -94,11 +94,11 @@
 			fileSystemSynchronizedGroups = (
 				1C7DC2EC3004CC9B001D7951 /* Portly */,
 			);
-			name = "Portly App Store";
+			name = "Portly (Sandboxed)";
 			packageProductDependencies = (
 			);
-			productName = "Portly App Store";
-			productReference = AAAA00000000000000000008 /* Portly App Store.app */;
+			productName = "Portly (Sandboxed)";
+			productReference = AAAA00000000000000000008 /* Portly.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -131,7 +131,7 @@
 			projectRoot = "";
 			targets = (
 				1C7DC2E93004CC9B001D7951 /* Portly */,
-				AAAA00000000000000000001 /* Portly App Store */,
+				AAAA00000000000000000001 /* Portly (Sandboxed) */,
 			);
 		};
 /* End PBXProject section */
@@ -296,7 +296,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 75YTB67VJZ;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -310,7 +311,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudorturcanu.Portly;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alice.turcanu.Portly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -329,7 +330,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 75YTB67VJZ;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -343,7 +345,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudorturcanu.Portly;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alice.turcanu.Portly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -360,15 +362,27 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 75YTB67VJZ;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Portly;
+				INFOPLIST_KEY_CFBundleName = Portly;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -378,8 +392,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudorturcanu.Portly.appstore;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.alice.turcanu.Portly.appstore;
+				PRODUCT_NAME = Portly;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APPSTORE $(inherited)";
@@ -396,15 +410,27 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 75YTB67VJZ;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = YES;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Portly;
+				INFOPLIST_KEY_CFBundleName = Portly;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -414,8 +440,8 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tudorturcanu.Portly.appstore;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.alice.turcanu.Portly.appstore;
+				PRODUCT_NAME = Portly;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APPSTORE $(inherited)";
@@ -448,7 +474,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AAAA00000000000000000002 /* Build configuration list for PBXNativeTarget "Portly App Store" */ = {
+		AAAA00000000000000000002 /* Build configuration list for PBXNativeTarget "Portly (Sandboxed)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AAAA00000000000000000003 /* Debug */,

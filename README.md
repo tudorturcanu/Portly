@@ -1,100 +1,57 @@
-# Portly 🔭
+# App Store Screenshots — Editor Template
 
-**See every local dev server on your Mac — and open, copy, or kill it in one click.**
+A pre-built Next.js + ShadCN editor for generating App Store and Google Play screenshots. Scaffolded by the `app-store-screenshots` skill.
 
-Portly is a tiny open-source macOS menu bar app for developers. It shows a live list of every TCP port something is listening on, which process owns it, and gives you one-click actions:
+## Quick start
 
-- 🌐 **Open** `localhost:<port>` in your browser
-- 📋 **Copy** the URL (or the PID)
-- 🛑 **Stop** the process — `SIGTERM` by default, hold <kbd>⌥ Option</kbd> to force-kill
-
-No more `Error: listen EADDRINUSE :::3000` → `lsof -i :3000` → `kill -9 <pid>` dance.
-
-<!-- TODO: screenshot — docs/screenshot.png -->
-
-## Features
-
-- **Live port list** — refreshes every 3 seconds while open, sorted by port
-- **Pinned ports** — pin `:3000` and `:5432` to the top; when nothing is listening there you get an explicit "nothing listening" row, so *"did my stack come up?"* is one glance away
-- **Recently stopped** — listeners that vanished stay visible as ghost rows for 5 minutes ("node · :3000 · stopped 2 min ago")
-- **Connection counts** — see how many clients are connected to each listener
-- **HTTP health dots** — optionally probe localhost ports and show a green/orange dot for HTTP 2xx/5xx responses (opt-in, skips databases)
-- **Menu bar badge** — see how many dev servers are running without opening the panel; the icon turns into a warning when a pinned port goes dark
-- **Process details** — click a row for uptime, memory, CPU time, the full command line, sibling ports, and Reveal in Finder
-- **Stop All Dev Servers** — end-of-day cleanup in one confirmed click (direct edition)
-- **Copy Port List** — the whole panel as a Markdown table, ready for a bug report or standup note
-- **Smart hints** — recognizes well-known ports (`5173 · Vite`, `8000 · Django`, `5432 · PostgreSQL`, `11434 · Ollama`, …)
-- **Docker-aware** — container-published ports show the container name (`myapp-db`) instead of `com.docker.backend`
-- **Notifications** — optionally get notified when something starts or stops listening on a port
-- **Dev-focused by default** — macOS system daemons (`rapportd`, `ControlCenter`, …) are hidden unless you enable *Show macOS System Processes*; UDP ports are one toggle away
-- **Filter** by port number, process name, protocol, or framework hint
-- **Copy as command** — right-click a port to copy a ready-made `curl` or `lsof` command
-- **Launch at Login** toggle
-- **Native and tiny** — pure SwiftUI, zero dependencies, no Electron, no network access, nothing leaves your Mac
-
-## Editions
-
-Portly builds as two targets from the same codebase:
-
-| | **Portly** (direct download) | **Portly App Store** |
-| --- | --- | --- |
-| Port list, hints, filter, badge, notifications, pins, ghosts, health probe | ✅ | ✅ |
-| Data source | `lsof` | kernel socket tables via `sysctl` (sandbox-safe) |
-| Stop / force-kill a process | ✅ one click | 📋 copies a `kill <pid>` command to paste in Terminal (the App Sandbox forbids signaling other processes) |
-| Docker container names | ✅ | — (sandbox can't reach the Docker socket) |
-| Sees other users' / root listeners | — (`lsof` limitation) | ✅ |
-| Sandboxed | no | yes — Mac App Store eligible |
-
-## Install
-
-### Build from source
-
-Requires Xcode 16 or later, runs on macOS 14 (Sonoma) or later.
-
-```sh
-git clone https://github.com/tudorturcanu/Portly.git
-cd Portly
-xcodebuild -project Portly.xcodeproj -scheme Portly -configuration Release build
+```bash
+bun install   # or pnpm / yarn / npm
+bun dev       # http://localhost:3000
 ```
 
-Or just open `Portly.xcodeproj` in Xcode and hit **⌘R**.
+## What's inside
 
-## How it works
+- **Connected canvas editor** (`src/components/editor/`) — every screen sits on one horizontal canvas, so phones, captions, and other elements can be dragged across screen boundaries and exported as split crops when Connected mode is enabled.
+- **Screen controls** — drag-to-reorder screens, click-to-edit text, screenshot drop targets, per-screen layout switcher, dark/light toggle.
+- **Device frames** (`src/components/editor/device-frames.tsx`) — iPhone (PNG mockup), iPad, Android phone, Android tablet (portrait + landscape), feature graphic.
+- **Auto-save (git-trackable)** — every change is persisted within ~600ms to **`app-store-screenshots.json`** at the project root (via `/api/project`) **and** mirrored to `localStorage` as an instant-paint cache. Commit `app-store-screenshots.json` and you can `git clone` to another machine and resume exactly where you left off.
+- **Multi-device decks** — iOS and Android slide decks live side by side; switching the platform tab preserves both.
+- **One-click export** — bulk PNG export at any required App Store / Play Store resolution using `html-to-image`; each PNG is rendered from the current connected or isolated deck mode.
+- **Project migration** — older `app-store-screenshots.json` files are migrated on load. Existing per-slide transforms remain valid, and connected crops become available without rewriting the deck by hand.
+- **Legacy-safe mode** — pre-v2 projects opened directly in the editor start in isolated-screen mode first, then can opt into connected crops with the toolbar's Connected/Isolated control. Skill-run in-place migrations keep legacy decks isolated unless the project had already explicitly opted into connected canvas.
 
-The direct-download edition shells out to the `lsof` that ships with macOS:
+## Adding screenshots
 
-```sh
-lsof -nP -iTCP -sTCP:LISTEN
-```
+Two ways:
 
-…parses its machine-readable (`-F`) output, and resolves each PID to its executable path via `libproc` to tell your dev servers apart from macOS system daemons. Stopping a process sends a plain POSIX signal. That's the whole trick — no kernel extensions, no elevated privileges, no daemons. It only ever sends signals to processes you explicitly click, and only your own processes — anything owned by another user shows a 🔒 instead.
+1. **Drop a file in the inspector** — drag-and-drop or click Pick. The file is sent to `/api/upload`, hashed, and written to `public/screenshots/uploaded/<hash>.png`. The slide stores the resulting `/screenshots/uploaded/...` path, so commit those files alongside `app-store-screenshots.json` and the screenshots survive a `git clone`.
+2. **Reference a static file** — put PNGs under `public/screenshots/{platform}/{device}/{locale}/` and reference them by path. Default sample slides expect:
+   - `public/screenshots/apple/iphone/en/...`
+   - `public/screenshots/android/phone/en/...`
+   - `public/screenshots/apple/ipad/en/...`
 
-The App Store edition can't spawn `lsof` (a sandboxed child inherits the sandbox and sees nothing), so it reads the kernel's socket tables directly via `sysctl net.inet.{tcp,udp}.pcblist_n` — the same data source `netstat` uses — and resolves pids with `proc_pidpath()`. Both are permitted inside the App Sandbox, and the parser (`SysctlPortScanner.swift`) is validated against `lsof` output.
+Update the matching `screenshot` fields in `app-store-screenshots.json` to point at whatever filenames you choose.
 
-## Roadmap
+## Exporting
 
-- [ ] Global hotkey to open the panel (blocked on SwiftUI: `MenuBarExtra` has no API to open programmatically)
-- [ ] Unit tests for the `lsof` and `sysctl` parsers
-- [ ] Homebrew cask (`brew install --cask portly`)
-- [ ] Notarized release builds via GitHub Actions
+The toolbar dropdown lists every Apple/Google-required size for the current device. Click **Export bundle** to download a zip. In Connected mode, each PNG is clipped from the connected canvas, so an element that straddles two screens appears split exactly where you placed it. In Isolated mode, each screen clips its own elements and legacy offscreen content cannot leak into neighboring exports.
 
-## Contributing
+## Customizing
 
-Issues and PRs welcome. The codebase is intentionally small:
+| Where | What |
+|-------|------|
+| `src/lib/constants.ts` | Canvas dimensions, export sizes, frame ratios, themes, locales |
+| `app-store-screenshots.json` | Canonical starter project: app name, current device, connected-canvas mode, slide copy, screenshots, and transforms |
+| `src/lib/defaults.ts` | Fallback/reset state used when no project file or local cache exists |
+| `src/components/editor/slide-canvas.tsx` | Add new layouts and connected-canvas element rendering |
+| `src/components/editor/device-frames.tsx` | Tweak device chrome (bezel radii, camera dots) |
+| `src/app/layout.tsx` | Swap the font (`next/font/google`) |
 
-| File | What it does |
-| --- | --- |
-| `Models/PortScanner.swift` | Scan facade; runs `lsof` and parses its `-F` output (pure `parse()` function, easy to test) |
-| `Models/SysctlPortScanner.swift` | Sandbox-safe scanner for the App Store build (kernel socket tables via `sysctl`) |
-| `Models/AppCapabilities.swift` | Compile-time feature switches between the two editions |
-| `Models/PortMonitor.swift` | `@Observable` state: port list, background refresh, terminate, change detection |
-| `Models/ListeningPort.swift` | Value type for one listening socket |
-| `Models/DockerResolver.swift` | Maps container-published host ports to container names via `docker ps` |
-| `Models/PortNotifier.swift` | macOS notifications when ports open or close |
-| `Models/ProcessInspector.swift` | On-demand process facts (uptime, memory, CPU, argv) via libproc |
-| `Views/MenuView.swift` | The menu bar panel |
-| `Views/PortRowView.swift` | One row: port, process, hover actions |
+## Notes
 
-## License
-
-[MIT](LICENSE) © 2026 Tudor Turcanu
+- `mockup.png` is the iPhone bezel overlay; replacing it requires re-measuring the `PHONE_SCREEN` constants.
+- Image preloading converts every static path to a base64 data URI before exports run, and export retries paths that were previously missing — this prevents the html-to-image race where some slide screenshots come out black.
+- Reset via the toolbar's circular arrow icon clears in-memory state and reloads the default screens. To wipe disk state too, delete `app-store-screenshots.json`.
+- **Persistence model** — the canonical state lives in `app-store-screenshots.json` (git-tracked). On load, the editor reads localStorage first for instant paint, then overwrites with the file contents if present; if the file endpoint is unavailable, autosave is blocked so stale cache cannot overwrite disk. On save, both are written. If you ever see a conflict, the file always wins.
+- **Migration model** — schema v1 projects do not need a manual conversion. On first load, the editor upgrades localized text and transform records, writes `schemaVersion: 2`, preserves all existing screens, and keeps `connectedCanvas: false` so old offscreen/clipped elements export exactly as isolated screens. Turn on **Connected** in the toolbar when you want elements to cross screen edges. Explicit skill migrations preserve an existing `connectedCanvas` choice, otherwise they keep legacy decks isolated too.
+- **Custom themes** — if a project file references a theme id that is not present in `src/lib/constants.ts`, the editor falls back to `clean-light` and shows a warning. Merge custom `THEMES` entries during in-place upgrades.
