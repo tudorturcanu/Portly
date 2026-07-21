@@ -41,12 +41,6 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 
 ## Installation
 
-### Direct download (recommended)
-
-Download the latest `.dmg` from [Releases](../../releases) and drag Portly into `/Applications`.
-
-The default build uses `lsof` to scan ports and can stop processes directly from the UI.
-
 ### Build from source
 
 ```bash
