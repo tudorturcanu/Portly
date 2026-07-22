@@ -46,8 +46,10 @@ struct DeadPinnedRowView: View {
     }
 }
 
-#Preview {
-    DeadPinnedRowView(port: 3000, monitor: .preview)
-        .padding()
-        .frame(width: 340)
+struct DeadPinnedRowView_Previews: PreviewProvider {
+    static var previews: some View {
+        DeadPinnedRowView(port: 3000, monitor: .preview)
+            .padding()
+            .frame(width: 340)
+    }
 }

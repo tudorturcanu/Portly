@@ -90,6 +90,8 @@ struct VisualEffectView: NSViewRepresentable {
     }
 }
 
-#Preview {
-    AboutView(onClose: {})
+struct AboutView_Previews: PreviewProvider {
+    static var previews: some View {
+        AboutView(onClose: {})
+    }
 }

@@ -123,9 +123,22 @@ Both backends return the same `[ListeningPort]` array, deduplicated per `pid:por
 
 ---
 
+## Testing & Quality
+
+Portly includes a unit test suite (`PortlyTests`) covering socket scanners, lsof parsing, container resolution, and state management.
+
+```bash
+# Run unit tests via xcodebuild
+xcodebuild test -project Portly.xcodeproj -scheme Portly -destination 'platform=macOS'
+
+# Or run tests in Xcode with ⌘U
+```
+
+---
+
 ## Contributing
 
-Pull requests are welcome. For significant changes, please open an issue first to discuss what you'd like to change.
+Pull requests are welcome. For significant changes, please open an issue first to discuss what you'd like to change. Please see [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for detailed contribution guidelines.
 
 ```bash
 # Run a local build

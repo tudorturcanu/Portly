@@ -117,6 +117,8 @@ private struct NotificationsSettingsTab: View {
     }
 }
 
-#Preview {
-    SettingsView(monitor: .preview)
+struct SettingsView_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingsView(monitor: .preview)
+    }
 }

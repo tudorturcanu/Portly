@@ -192,11 +192,13 @@ struct PortRowView: View {
     }
 }
 
-#Preview {
-    PortRowView(
-        port: ListeningPort(port: 3000, pid: 501, processName: "node", address: "*", user: NSUserName(), executablePath: "/opt/homebrew/bin/node"),
-        monitor: .preview
-    )
-    .padding()
-    .frame(width: 340)
+struct PortRowView_Previews: PreviewProvider {
+    static var previews: some View {
+        PortRowView(
+            port: ListeningPort(port: 3000, pid: 501, processName: "node", address: "*", user: NSUserName(), executablePath: "/opt/homebrew/bin/node"),
+            monitor: .preview
+        )
+        .padding()
+        .frame(width: 340)
+    }
 }

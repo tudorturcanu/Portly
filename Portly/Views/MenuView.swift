@@ -292,6 +292,8 @@ struct MenuView: View {
     }
 }
 
-#Preview {
-    MenuView(monitor: .preview)
+struct MenuView_Previews: PreviewProvider {
+    static var previews: some View {
+        MenuView(monitor: .preview)
+    }
 }

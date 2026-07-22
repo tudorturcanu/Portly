@@ -35,10 +35,12 @@ struct ClosedPortRowView: View {
     }
 }
 
-#Preview {
-    ClosedPortRowView(
-        closed: ClosedPort(port: 3000, displayName: "node", networkProtocol: .tcp, closedAt: .now)
-    )
-    .padding()
-    .frame(width: 340)
+struct ClosedPortRowView_Previews: PreviewProvider {
+    static var previews: some View {
+        ClosedPortRowView(
+            closed: ClosedPort(port: 3000, displayName: "node", networkProtocol: .tcp, closedAt: .now)
+        )
+        .padding()
+        .frame(width: 340)
+    }
 }

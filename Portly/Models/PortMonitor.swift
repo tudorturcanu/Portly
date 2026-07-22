@@ -9,6 +9,7 @@ import Observation
 /// Owns the list of listening ports, refreshes it in the background,
 /// and posts notifications when ports open or close.
 @Observable
+@MainActor
 final class PortMonitor {
     static let probeDefaultsKey = "probeLocalhostHTTP"
     private static let pinnedDefaultsKey = "pinnedPorts"

@@ -106,9 +106,11 @@ struct ProcessDetailView: View {
     }
 }
 
-#Preview {
-    ProcessDetailView(
-        port: ListeningPort(port: 3000, pid: 501, processName: "node", address: "*", user: NSUserName(), executablePath: "/opt/homebrew/bin/node"),
-        monitor: .preview
-    )
+struct ProcessDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        ProcessDetailView(
+            port: ListeningPort(port: 3000, pid: 501, processName: "node", address: "*", user: NSUserName(), executablePath: "/opt/homebrew/bin/node"),
+            monitor: .preview
+        )
+    }
 }

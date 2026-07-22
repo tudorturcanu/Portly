@@ -106,6 +106,8 @@ struct OnboardingView: View {
     }
 }
 
-#Preview {
-    OnboardingView(onFinish: {})
+struct OnboardingView_Previews: PreviewProvider {
+    static var previews: some View {
+        OnboardingView(onFinish: {})
+    }
 }

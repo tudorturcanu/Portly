@@ -9,12 +9,18 @@
 /* Begin PBXFileReference section */
 		1C7DC2EA3004CC9B001D7951 /* Portly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAAA00000000000000000008 /* Portly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Portly.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBBB00000000000000000008 /* PortlyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PortlyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1C7DC2EC3004CC9B001D7951 /* Portly */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Portly;
+			sourceTree = "<group>";
+		};
+		BBBB00000000000000000009 /* PortlyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PortlyTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -34,6 +40,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BBBB00000000000000000006 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -41,6 +54,7 @@
 			isa = PBXGroup;
 			children = (
 				1C7DC2EC3004CC9B001D7951 /* Portly */,
+				BBBB00000000000000000009 /* PortlyTests */,
 				1C7DC2EB3004CC9B001D7951 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +64,7 @@
 			children = (
 				1C7DC2EA3004CC9B001D7951 /* Portly.app */,
 				AAAA00000000000000000008 /* Portly.app */,
+				BBBB00000000000000000008 /* PortlyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -101,6 +116,29 @@
 			productReference = AAAA00000000000000000008 /* Portly.app */;
 			productType = "com.apple.product-type.application";
 		};
+		BBBB00000000000000000001 /* PortlyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBBB00000000000000000002 /* Build configuration list for PBXNativeTarget "PortlyTests" */;
+			buildPhases = (
+				BBBB00000000000000000005 /* Sources */,
+				BBBB00000000000000000006 /* Frameworks */,
+				BBBB00000000000000000007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BBBB00000000000000000010 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BBBB00000000000000000009 /* PortlyTests */,
+			);
+			name = PortlyTests;
+			packageProductDependencies = (
+			);
+			productName = PortlyTests;
+			productReference = BBBB00000000000000000008 /* PortlyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -112,6 +150,9 @@
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					1C7DC2E93004CC9B001D7951 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					BBBB00000000000000000001 = {
 						CreatedOnToolsVersion = 26.3;
 					};
 				};
@@ -132,6 +173,7 @@
 			targets = (
 				1C7DC2E93004CC9B001D7951 /* Portly */,
 				AAAA00000000000000000001 /* Portly (Sandboxed) */,
+				BBBB00000000000000000001 /* PortlyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -294,11 +336,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = 85WWK9DRYX;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -329,11 +371,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = 85WWK9DRYX;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -364,11 +406,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = 85WWK9DRYX;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -412,11 +454,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 2;
-				DEVELOPMENT_TEAM = 85WWK9DRYX;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -455,7 +497,59 @@
 			};
 			name = Release;
 		};
+		BBBB00000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alice.turcanu.PortlyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Portly.app/Contents/MacOS/Portly";
+			};
+			name = Debug;
+		};
+		BBBB00000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.alice.turcanu.PortlyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Portly.app/Contents/MacOS/Portly";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
+
+/* Begin PBXTargetDependency section */
+		BBBB00000000000000000010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1C7DC2E93004CC9B001D7951 /* Portly */;
+			targetProxy = BBBB00000000000000000011 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		BBBB00000000000000000011 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C7DC2E23004CC9B001D7951 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C7DC2E93004CC9B001D7951;
+			remoteInfo = Portly;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin XCConfigurationList section */
 		1C7DC2E53004CC9B001D7951 /* Build configuration list for PBXProject "Portly" */ = {
@@ -481,6 +575,15 @@
 			buildConfigurations = (
 				AAAA00000000000000000003 /* Debug */,
 				AAAA00000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BBBB00000000000000000002 /* Build configuration list for PBXNativeTarget "PortlyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBBB00000000000000000003 /* Debug */,
+				BBBB00000000000000000004 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

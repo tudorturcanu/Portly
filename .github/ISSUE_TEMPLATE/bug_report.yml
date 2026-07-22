@@ -1,0 +1,49 @@
+name: Bug Report
+description: Create a report to help us improve Portly
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Open Portly menu bar item
+        2. Filter by port 3000
+        3. Click 'Stop Process'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Execution Mode
+      options:
+        - Standard Mode (lsof / direct download)
+        - Sandboxed Mode (sysctl / App Store build)
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS Version
+      placeholder: e.g. macOS 14.5 Sonoma / macOS 15.0 Sequoia
+    validations:
+      required: true
