@@ -13,12 +13,14 @@ import Observation
 final class PortMonitor {
     static let probeDefaultsKey = "probeLocalhostHTTP"
     private static let pinnedDefaultsKey = "pinnedPorts"
+    private static let aliasesDefaultsKey = "customPortAliases"
     private static let ghostLifetime: TimeInterval = 300
     private static let probeInterval: TimeInterval = 15
 
     private(set) var ports: [ListeningPort] = []
     private(set) var recentlyClosed: [ClosedPort] = []
     private(set) var pinnedPorts: Set<Int> = []
+    private(set) var customAliases: [Int: String] = [:]
     /// Port → last HTTP status code from the localhost health probe.
     private(set) var health: [Int: Int] = [:]
     private(set) var lastUpdated: Date?
@@ -29,7 +31,18 @@ final class PortMonitor {
     @ObservationIgnored private var lastProbeAt: [Int: Date] = [:]
 
     init(ports: [ListeningPort] = [], startsMonitoring: Bool = true) {
-        self.ports = ports
+        if let stored = UserDefaults.standard.dictionary(forKey: Self.aliasesDefaultsKey) as? [String: String] {
+            var loaded: [Int: String] = [:]
+            for (key, val) in stored {
+                if let p = Int(key) { loaded[p] = val }
+            }
+            self.customAliases = loaded
+        }
+        self.ports = ports.map { p in
+            var copy = p
+            if let alias = self.customAliases[p.port] { copy.customAlias = alias }
+            return copy
+        }
         pinnedPorts = Set(UserDefaults.standard.array(forKey: Self.pinnedDefaultsKey) as? [Int] ?? [])
         if startsMonitoring {
             startMonitoring()
@@ -61,7 +74,12 @@ final class PortMonitor {
         do {
             let previous = ports
             let hadBaseline = lastUpdated != nil
-            ports = try await PortScanner.scan()
+            let scanned = try await PortScanner.scan()
+            ports = scanned.map { p in
+                var copy = p
+                copy.customAlias = customAliases[p.port]
+                return copy
+            }
             lastUpdated = .now
             statusMessage = nil
 
@@ -72,6 +90,29 @@ final class PortMonitor {
             await probeHealthIfEnabled()
         } catch {
             statusMessage = "Scan failed: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Custom Aliases
+
+    func setAlias(_ alias: String?, for port: Int) {
+        let trimmed = alias?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmed, !trimmed.isEmpty {
+            customAliases[port] = trimmed
+        } else {
+            customAliases.removeValue(forKey: port)
+        }
+
+        var dict: [String: String] = [:]
+        for (key, val) in customAliases {
+            dict[String(key)] = val
+        }
+        UserDefaults.standard.set(dict, forKey: Self.aliasesDefaultsKey)
+
+        ports = ports.map { p in
+            var copy = p
+            copy.customAlias = customAliases[p.port]
+            return copy
         }
     }
 

@@ -20,6 +20,7 @@ struct ListeningPort: Identifiable, Hashable {
     var networkProtocol: NetworkProtocol = .tcp
     var executablePath: String?
     var containerName: String?
+    var customAlias: String?
     var establishedConnections: Int = 0
 
     var id: String { "\(pid):\(port):\(networkProtocol.rawValue)" }
@@ -29,10 +30,16 @@ struct ListeningPort: Identifiable, Hashable {
 
     var displayAddress: String { isWildcard ? "all interfaces" : address }
 
-    /// The Docker container name when the port is container-published, else the process name.
-    var displayName: String { containerName ?? processName }
+    /// The custom alias if set, otherwise Docker container name if container-published, else process name.
+    var displayName: String { customAlias ?? containerName ?? processName }
 
     var localURL: URL? { URL(string: "http://localhost:\(port)") }
+
+    /// Returns the local network (LAN) URL e.g. http://192.168.1.150:3000
+    func lanURL(ipAddress: String? = NetworkUtility.localIPAddress) -> URL? {
+        guard let ip = ipAddress else { return nil }
+        return URL(string: "http://\(ip):\(port)")
+    }
 
     var isOwnedByCurrentUser: Bool { user == NSUserName() }
 

@@ -127,6 +127,11 @@ struct PortRowView: View {
         if port.networkProtocol == .tcp {
             Button("Open in Browser", systemImage: "safari", action: openInBrowser)
             Button("Copy URL", systemImage: "doc.on.doc", action: copyURL)
+            if let lanURL = port.lanURL() {
+                Button("Copy LAN URL", systemImage: "wifi") {
+                    copyToPasteboard(lanURL.absoluteString)
+                }
+            }
             Button("Copy curl Command", systemImage: "terminal") {
                 copyToPasteboard("curl http://localhost:\(port.port)/")
             }

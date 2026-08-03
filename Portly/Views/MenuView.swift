@@ -31,6 +31,7 @@ struct MenuView: View {
             ports = ports.filter {
                 $0.displayName.localizedStandardContains(searchText)
                     || String($0.port).contains(searchText)
+                    || ($0.customAlias?.localizedStandardContains(searchText) ?? false)
                     || ($0.hint?.localizedStandardContains(searchText) ?? false)
                     || $0.networkProtocol.rawValue.localizedStandardContains(searchText)
             }
@@ -134,9 +135,18 @@ struct MenuView: View {
 
             Divider()
 
-            Button("Copy Port List", systemImage: "list.clipboard") {
-                copyPortList()
+            Menu("Copy Port List", systemImage: "list.clipboard") {
+                Button("Copy as Markdown Table") {
+                    copyPortList(format: .markdown)
+                }
+                Button("Copy as JSON") {
+                    copyPortList(format: .json)
+                }
+                Button("Copy as CSV") {
+                    copyPortList(format: .csv)
+                }
             }
+
             if AppCapabilities.canTerminateProcesses {
                 Button("Stop All Dev Servers…", systemImage: "stop.circle", role: .destructive) {
                     confirmingStopAll = true
@@ -254,13 +264,10 @@ struct MenuView: View {
         }
     }
 
-    private func copyPortList() {
-        let header = ["| Port | Proto | Process | PID | Address |", "| --- | --- | --- | --- | --- |"]
-        let rows = visiblePorts.map { port in
-            "| :\(port.port) | \(port.networkProtocol.rawValue) | \(port.displayName) | \(port.pid) | \(port.displayAddress) |"
-        }
+    private func copyPortList(format: ExportFormat = .markdown) {
+        let content = PortExporter.export(visiblePorts, format: format)
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString((header + rows).joined(separator: "\n"), forType: .string)
+        NSPasteboard.general.setString(content, forType: .string)
     }
 
     private var footer: some View {

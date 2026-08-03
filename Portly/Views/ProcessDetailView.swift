@@ -11,6 +11,7 @@ struct ProcessDetailView: View {
     var monitor: PortMonitor
 
     @State private var details = ProcessDetails()
+    @State private var aliasText = ""
 
     private var siblingPorts: [ListeningPort] {
         monitor.ports.filter { $0.pid == port.pid && $0.id != port.id }
@@ -29,6 +30,36 @@ struct ProcessDetailView: View {
             }
 
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 4) {
+                detailRow("Alias") {
+                    HStack(spacing: 4) {
+                        TextField("e.g. Frontend Web", text: $aliasText)
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit {
+                                monitor.setAlias(aliasText, for: port.port)
+                            }
+                        if monitor.customAliases[port.port] != nil {
+                            Button("Clear") {
+                                aliasText = ""
+                                monitor.setAlias(nil, for: port.port)
+                            }
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                }
+                if let lanURL = port.lanURL() {
+                    detailRow("LAN URL") {
+                        HStack(spacing: 4) {
+                            Text(lanURL.absoluteString)
+                                .textSelection(.enabled)
+                            Button("Copy", systemImage: "doc.on.doc") {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(lanURL.absoluteString, forType: .string)
+                            }
+                            .labelStyle(.iconOnly)
+                            .buttonStyle(.borderless)
+                        }
+                    }
+                }
                 if let path = port.executablePath {
                     detailRow("Path") {
                         Text(path)
@@ -89,8 +120,9 @@ struct ProcessDetailView: View {
             .controlSize(.small)
         }
         .padding(12)
-        .frame(width: 330)
+        .frame(width: 340)
         .onAppear {
+            aliasText = monitor.customAliases[port.port] ?? ""
             details = ProcessInspector.details(for: port.pid)
         }
     }

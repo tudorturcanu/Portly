@@ -24,8 +24,10 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 - **HTTP health probing** — optionally polls your dev servers every 15 seconds and shows a green/orange dot per port based on the HTTP status code. Database ports are skipped automatically.
 - **Notifications** — opt-in system notifications whenever a port opens or closes.
 - **Process details** — click any row for a popover with the executable path, PID, user, start time, CPU time, memory usage, full command line, and any other ports the same process holds.
+- **Custom port aliases** — set friendly names for your ports (e.g. "Frontend Web", "Staging API") that persist across launches and are fully searchable.
+- **Local Network (LAN) IP URLs** — automatically detects your Mac's active IPv4 address and provides one-click "Copy LAN URL" (`http://192.168.x.x:<port>`) for instant testing on physical iOS/Android devices on local Wi-Fi.
+- **Multi-format export** — copy active ports in Markdown table, JSON, or CSV formats for easy sharing in runbooks or Slack.
 - **"Stop All Dev Servers"** — one confirmation to SIGTERM every non-system TCP listener you own.
-- **Copy port list** — copies the visible ports as a Markdown table, useful for pasting into issues or runbooks.
 
 ---
 
