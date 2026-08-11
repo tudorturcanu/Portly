@@ -46,7 +46,7 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 ### Build from source
 
 ```bash
-git clone https://github.com/<you>/Portly.git
+git clone https://github.com/tudorturcanu/Portly.git
 cd Portly
 open Portly.xcodeproj
 ```
