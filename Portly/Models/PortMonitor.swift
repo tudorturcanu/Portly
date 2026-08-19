@@ -84,6 +84,7 @@ final class PortMonitor {
             statusMessage = nil
 
             updateRecentlyClosed(from: previous, to: ports, hadBaseline: hadBaseline)
+            TunnelManager.shared.pruneInactive(listeningPorts: ports)
             if hadBaseline {
                 await notifyChanges(from: previous, to: ports)
             }

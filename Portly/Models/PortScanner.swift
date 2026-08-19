@@ -44,6 +44,16 @@ enum PortScanner {
         var ports = parse(output).map { port in
             var port = port
             port.executablePath = executablePath(for: port.pid)
+            if port.isOwnedByCurrentUser {
+                let (args, _) = ProcessInspector.procArgs(for: port.pid)
+                if let args {
+                    port.smartDescriptor = SmartProcessDescriptor.describe(
+                        processName: port.processName,
+                        executablePath: port.executablePath,
+                        arguments: args
+                    )
+                }
+            }
             return port
         }
 

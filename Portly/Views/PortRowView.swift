@@ -64,6 +64,9 @@ struct PortRowView: View {
 
     private var subtitle: String {
         var parts: [String] = []
+        if let smart = port.smartDescriptor {
+            parts.append(smart)
+        }
         if port.networkProtocol == .udp {
             parts.append("UDP")
         }
@@ -83,6 +86,14 @@ struct PortRowView: View {
 
     private var actions: some View {
         HStack(spacing: 2) {
+            if let tunnelURL = TunnelManager.shared.tunnelURL(for: port.port) {
+                Button("Copy Tunnel URL", systemImage: "globe") {
+                    copyToPasteboard(tunnelURL.absoluteString)
+                }
+                .help("Copy public tunnel URL: \(tunnelURL.absoluteString)")
+                .foregroundStyle(.tint)
+            }
+
             if port.networkProtocol == .tcp {
                 Button("Open in Browser", systemImage: "safari", action: openInBrowser)
                     .help("Open localhost:\(port.port) in your browser")
@@ -132,6 +143,19 @@ struct PortRowView: View {
                     copyToPasteboard(lanURL.absoluteString)
                 }
             }
+            if let tunnelURL = TunnelManager.shared.tunnelURL(for: port.port) {
+                Button("Copy Public Tunnel URL", systemImage: "globe") {
+                    copyToPasteboard(tunnelURL.absoluteString)
+                }
+                Button("Stop Public Tunnel", systemImage: "xmark.circle") {
+                    TunnelManager.shared.stopTunnel(for: port.port)
+                }
+            } else {
+                Button("Start Public Tunnel…", systemImage: "globe") {
+                    Task { await TunnelManager.shared.startTunnel(for: port.port) }
+                }
+                .disabled(TunnelManager.shared.isStarting(port.port))
+            }
             Button("Copy curl Command", systemImage: "terminal") {
                 copyToPasteboard("curl http://localhost:\(port.port)/")
             }
@@ -147,6 +171,9 @@ struct PortRowView: View {
         Divider()
         Button("Show Details", systemImage: "info.circle") {
             showingDetails = true
+        }
+        Button("Open in Terminal", systemImage: "terminal") {
+            openInTerminal()
         }
         if let path = port.executablePath {
             Button("Reveal in Finder", systemImage: "folder") {
@@ -171,6 +198,15 @@ struct PortRowView: View {
                     copyKillCommand(force: true)
                 }
             }
+        }
+    }
+
+    private func openInTerminal() {
+        if let cwd = ProcessInspector.currentWorkingDirectory(for: port.pid) {
+            TerminalLauncher.openInTerminal(at: cwd)
+        } else if let path = port.executablePath {
+            let dir = URL(fileURLWithPath: path).deletingLastPathComponent().path
+            TerminalLauncher.openInTerminal(at: dir)
         }
     }
 

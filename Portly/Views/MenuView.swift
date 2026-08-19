@@ -32,6 +32,7 @@ struct MenuView: View {
                 $0.displayName.localizedStandardContains(searchText)
                     || String($0.port).contains(searchText)
                     || ($0.customAlias?.localizedStandardContains(searchText) ?? false)
+                    || ($0.smartDescriptor?.localizedStandardContains(searchText) ?? false)
                     || ($0.hint?.localizedStandardContains(searchText) ?? false)
                     || $0.networkProtocol.rawValue.localizedStandardContains(searchText)
             }

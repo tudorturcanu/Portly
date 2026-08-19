@@ -18,12 +18,16 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 
 - **Live port list** — rescans every 3 seconds while the panel is open; keeps a slower background loop running when it's closed so the badge stays current.
 - **One-click actions** — hover any row to open `localhost:<port>` in your browser, copy the URL, or stop the process (SIGTERM / SIGKILL). Hold ⌥ to force-kill.
+- **Open in Terminal & IDE** — right-click or inspect any process to open its Working Directory (`cwd`) in your favorite terminal (Ghostty, iTerm2, Warp, Alacritty, Kitty, Terminal.app) or code editor (Cursor, VS Code, Xcode).
+- **Environment Variable (.env) Inspector** — inspect the environment variables of any running dev server with search, sensitive value masking, and one-click `.env` export.
+- **Smart Process & Framework Descriptors** — resolves Kubernetes (`kubectl port-forward`) targets to pod/service names with namespace tagging, parses SSH tunnels, and identifies web frameworks (Next.js, Vite, FastAPI, Django, Flask, Rails, Puma).
+- **One-Click Public Tunnels** — instantly expose local ports to the web via Cloudflare Tunnel (`cloudflared`), `localtunnel`, or `ngrok` with automatic URL copying and live tunnel indicators.
 - **Port pinning** — right-click any port to pin it. The menu bar icon switches to a warning triangle the moment a pinned port goes dark.
 - **Ghost rows** — recently-closed ports linger for 5 minutes so you can see what just went down.
 - **Docker support** — the direct-download build resolves Docker's port-proxy entries to the actual container name, so you see `myapp-db` instead of `com.docker.backend`.
 - **HTTP health probing** — optionally polls your dev servers every 15 seconds and shows a green/orange dot per port based on the HTTP status code. Database ports are skipped automatically.
 - **Notifications** — opt-in system notifications whenever a port opens or closes.
-- **Process details** — click any row for a popover with the executable path, PID, user, start time, CPU time, memory usage, full command line, and any other ports the same process holds.
+- **Process details** — click any row for a popover with the executable path, PID, user, start time, CPU time, memory usage, full command line, environment variables, working directory, and any other ports the same process holds.
 - **Custom port aliases** — set friendly names for your ports (e.g. "Frontend Web", "Staging API") that persist across launches and are fully searchable.
 - **Local Network (LAN) IP URLs** — automatically detects your Mac's active IPv4 address and provides one-click "Copy LAN URL" (`http://192.168.x.x:<port>`) for instant testing on physical iOS/Android devices on local Wi-Fi.
 - **Multi-format export** — copy active ports in Markdown table, JSON, or CSV formats for easy sharing in runbooks or Slack.
@@ -72,6 +76,8 @@ Portly supports two execution modes:
 4. **Act on a port** — hover a row to reveal quick-action buttons, or right-click for the full context menu:
    - Open in Browser
    - Copy URL
+   - Start / Stop Public Tunnel (Cloudflare / ngrok)
+   - Open in Terminal / IDE
    - Copy `curl` / `lsof` command
    - Copy PID
    - Reveal executable in Finder
@@ -89,30 +95,33 @@ Portly supports two execution modes:
 ```
 Portly/
 ├── Models/
-│   ├── PortMonitor.swift        # Observable state: ports, pinned, ghosts, health
-│   ├── PortScanner.swift        # lsof backend (Standard mode)
-│   ├── SysctlPortScanner.swift  # sysctl backend (Sandboxed mode)
-│   ├── DockerResolver.swift     # Maps Docker proxy ports → container names
-│   ├── ListeningPort.swift      # Core value type for a listening socket
-│   ├── ClosedPort.swift         # Ghost record for recently-closed ports
-│   ├── PortHint.swift           # Well-known port → service name mapping
-│   ├── PortNotifier.swift       # System notification posting
-│   ├── ProcessInspector.swift   # Reads CPU time, memory, argv via libproc
-│   ├── ProcessDetails.swift     # Value type returned by ProcessInspector
-│   ├── AppCapabilities.swift    # Compile-time Standard vs. Sandboxed flags
-│   └── LaunchAtLogin.swift      # SMAppService wrapper
+│   ├── PortMonitor.swift            # Observable state: ports, pinned, ghosts, health
+│   ├── PortScanner.swift            # lsof backend (Standard mode)
+│   ├── SysctlPortScanner.swift      # sysctl backend (Sandboxed mode)
+│   ├── DockerResolver.swift         # Maps Docker proxy ports → container names
+│   ├── ListeningPort.swift          # Core value type for a listening socket
+│   ├── ClosedPort.swift             # Ghost record for recently-closed ports
+│   ├── PortHint.swift               # Well-known port → service name mapping
+│   ├── PortNotifier.swift           # System notification posting
+│   ├── ProcessInspector.swift       # Reads CPU time, memory, argv, cwd, and env via libproc/sysctl
+│   ├── ProcessDetails.swift         # Value type returned by ProcessInspector
+│   ├── SmartProcessDescriptor.swift # Recognizes Kubernetes, SSH, Docker, and Web Framework runtimes
+│   ├── TerminalLauncher.swift       # Discovers and launches terminal emulators & IDEs at cwd
+│   ├── TunnelManager.swift          # Manages background Cloudflare, Localtunnel, and ngrok tunnels
+│   ├── AppCapabilities.swift        # Compile-time Standard vs. Sandboxed flags
+│   └── LaunchAtLogin.swift          # SMAppService wrapper
 └── Views/
-    ├── MenuView.swift           # Main panel (search, port list, footer)
-    ├── PortRowView.swift        # Individual port row with hover actions
-    ├── ProcessDetailView.swift  # Click-to-open detail popover
-    ├── DeadPinnedRowView.swift  # Placeholder row for a pinned port with no listener
-    ├── ClosedPortRowView.swift  # Ghost row for recently-closed ports
-    ├── SettingsView.swift       # Three-tab Settings window
-    ├── OnboardingView.swift     # First-launch welcome screen
-    ├── LaunchToast.swift        # Brief banner on subsequent launches
-    ├── AboutView.swift          # About screen
-    ├── AboutWindow.swift        # NSWindow wrapper for About
-    └── OnboardingWindow.swift   # NSWindow wrapper for Onboarding
+    ├── MenuView.swift               # Main panel (search, port list, footer)
+    ├── PortRowView.swift            # Individual port row with hover actions
+    ├── ProcessDetailView.swift      # Click-to-open detail popover
+    ├── DeadPinnedRowView.swift      # Placeholder row for a pinned port with no listener
+    ├── ClosedPortRowView.swift      # Ghost row for recently-closed ports
+    ├── SettingsView.swift           # Three-tab Settings window
+    ├── OnboardingView.swift         # First-launch welcome screen
+    ├── LaunchToast.swift            # Brief banner on subsequent launches
+    ├── AboutView.swift              # About screen
+    ├── AboutWindow.swift            # NSWindow wrapper for About
+    └── OnboardingWindow.swift       # NSWindow wrapper for Onboarding
 ```
 
 ### How scanning works
