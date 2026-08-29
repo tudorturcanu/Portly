@@ -20,6 +20,8 @@ struct ListeningPort: Identifiable, Hashable {
     var networkProtocol: NetworkProtocol = .tcp
     var executablePath: String?
     var containerName: String?
+    var composeProject: String?
+    var composeService: String?
     var customAlias: String?
     var smartDescriptor: String?
     var establishedConnections: Int = 0

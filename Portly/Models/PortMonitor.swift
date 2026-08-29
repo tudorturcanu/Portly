@@ -85,6 +85,7 @@ final class PortMonitor {
 
             updateRecentlyClosed(from: previous, to: ports, hadBaseline: hadBaseline)
             TunnelManager.shared.pruneInactive(listeningPorts: ports)
+            PortHistoryManager.shared.recordScan(activePorts: ports)
             if hadBaseline {
                 await notifyChanges(from: previous, to: ports)
             }

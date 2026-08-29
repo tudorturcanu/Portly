@@ -60,12 +60,14 @@ enum PortScanner {
         // When Docker's port proxy owns sockets, resolve which container each
         // published port belongs to so rows can show the container name.
         if ports.contains(where: \.isDockerBackend) {
-            let containers = await DockerResolver.publishedPorts()
-            if !containers.isEmpty {
+            let containerDetails = await DockerResolver.publishedPortDetails()
+            if !containerDetails.isEmpty {
                 ports = ports.map { port in
-                    guard port.isDockerBackend, let name = containers[port.port] else { return port }
+                    guard port.isDockerBackend, let details = containerDetails[port.port] else { return port }
                     var port = port
-                    port.containerName = name
+                    port.containerName = details.containerName
+                    port.composeProject = details.composeProject
+                    port.composeService = details.composeService
                     return port
                 }
             }

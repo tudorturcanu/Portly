@@ -9,6 +9,18 @@ import XCTest
 @MainActor
 final class PortMonitorTests: XCTestCase {
 
+    override func setUp() {
+        super.setUp()
+        UserDefaults.standard.removeObject(forKey: "pinnedPorts")
+        UserDefaults.standard.removeObject(forKey: "customPortAliases")
+    }
+
+    override func tearDown() {
+        UserDefaults.standard.removeObject(forKey: "pinnedPorts")
+        UserDefaults.standard.removeObject(forKey: "customPortAliases")
+        super.tearDown()
+    }
+
     func testDevServerCount() {
         let samplePorts = [
             ListeningPort(port: 3000, pid: 101, processName: "node", address: "*", user: "user", networkProtocol: .tcp, executablePath: "/opt/homebrew/bin/node"),

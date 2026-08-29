@@ -13,6 +13,10 @@ struct PortRowView: View {
     @State private var isHovering = false
     @State private var showingDetails = false
 
+    private var customActions: [CustomAction] {
+        CustomActionManager.shared.actions(for: port)
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             HStack(spacing: 4) {
@@ -67,11 +71,15 @@ struct PortRowView: View {
         if let smart = port.smartDescriptor {
             parts.append(smart)
         }
+        if let svc = port.composeService {
+            parts.append("compose: \(svc)")
+        } else if let proj = port.composeProject {
+            parts.append("compose: \(proj)")
+        } else if port.containerName != nil {
+            parts.append("Docker")
+        }
         if port.networkProtocol == .udp {
             parts.append("UDP")
-        }
-        if port.containerName != nil {
-            parts.append("Docker")
         }
         parts.append(port.displayAddress)
         parts.append("pid \(port.pid)")
@@ -172,12 +180,45 @@ struct PortRowView: View {
         Button("Show Details", systemImage: "info.circle") {
             showingDetails = true
         }
+        Button("Stream Logs…", systemImage: "text.alignleft") {
+            ProcessLogWindow.show(for: port)
+        }
         Button("Open in Terminal", systemImage: "terminal") {
             openInTerminal()
         }
         if let path = port.executablePath {
             Button("Reveal in Finder", systemImage: "folder") {
                 NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: path)])
+            }
+        }
+
+        if let container = port.containerName {
+            Divider()
+            Button("Restart Container (\(container))", systemImage: "arrow.clockwise") {
+                Task {
+                    await DockerManager.restartContainer(container)
+                    await monitor.refresh()
+                }
+            }
+            Button("Stop Container (\(container))", systemImage: "stop.circle") {
+                Task {
+                    await DockerManager.stopContainer(container)
+                    await monitor.refresh()
+                }
+            }
+        }
+
+        if !customActions.isEmpty {
+            Divider()
+            Menu("Custom Actions", systemImage: "command") {
+                ForEach(customActions) { act in
+                    Button(act.name, systemImage: act.icon) {
+                        let cwd = ProcessInspector.currentWorkingDirectory(for: port.pid)
+                        Task {
+                            await CustomActionManager.shared.run(act, on: port, workingDirectory: cwd)
+                        }
+                    }
+                }
             }
         }
 

@@ -21,8 +21,11 @@ struct SettingsView: View {
 
             NotificationsSettingsTab(monitor: monitor)
                 .tabItem { Label("Notifications", systemImage: "bell") }
+
+            ActionsSettingsTab()
+                .tabItem { Label("Actions", systemImage: "command") }
         }
-        .frame(width: 420)
+        .frame(width: 480)
         .scenePadding()
     }
 }
@@ -113,6 +116,151 @@ private struct NotificationsSettingsTab: View {
                     monitor.statusMessage = "Notifications are disabled — enable them in System Settings."
                 }
             }
+        }
+    }
+}
+
+private struct ActionsSettingsTab: View {
+    var actionManager = CustomActionManager.shared
+    @State private var showingAddSheet = false
+    @State private var editingAction: CustomAction?
+    @State private var newName = ""
+    @State private var newCommand = ""
+    @State private var newRunInTerminal = false
+    @State private var newTargetPortString = ""
+    @State private var newIcon = "play.fill"
+
+    private let availableIcons = ["play.fill", "terminal", "network", "doc.text.magnifyingglass", "arrow.clockwise", "wrench.and.screwdriver", "bolt.fill", "globe"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Custom Scripts & Actions")
+                    .font(.headline)
+                Spacer()
+                Button("Add Action", systemImage: "plus") {
+                    newName = ""
+                    newCommand = ""
+                    newRunInTerminal = false
+                    newTargetPortString = ""
+                    newIcon = "play.fill"
+                    showingAddSheet = true
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            }
+
+            Text("Attach custom commands to ports or services. Available variables: `$PORT`, `$PID`, `$CWD`, `$NAME`, `$URL`, `$HOST`.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            List {
+                ForEach(actionManager.actions) { action in
+                    HStack(spacing: 8) {
+                        Image(systemName: action.icon)
+                            .foregroundStyle(.tint)
+                            .frame(width: 18)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 4) {
+                                Text(action.name)
+                                    .font(.callout.weight(.medium))
+                                if let port = action.targetPort {
+                                    Text(":\(port)")
+                                        .font(.caption2.weight(.bold))
+                                        .foregroundStyle(.secondary)
+                                        .padding(.horizontal, 4)
+                                        .background(.quaternary, in: .capsule)
+                                }
+                                if action.runInTerminal {
+                                    Text("Terminal")
+                                        .font(.caption2)
+                                        .foregroundStyle(.purple)
+                                        .padding(.horizontal, 4)
+                                        .background(Color.purple.opacity(0.1), in: .capsule)
+                                }
+                            }
+                            Text(action.command)
+                                .font(.system(.caption2, design: .monospaced))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+
+                        Spacer()
+
+                        Button("Delete", systemImage: "trash") {
+                            actionManager.deleteAction(id: action.id)
+                        }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(.borderless)
+                        .foregroundStyle(.red)
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+            .listStyle(.inset(alternatesRowBackgrounds: true))
+            .frame(height: 180)
+        }
+        .padding()
+        .sheet(isPresented: $showingAddSheet) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("New Custom Action")
+                    .font(.headline)
+
+                TextField("Name (e.g. Run DB Migrations)", text: $newName)
+                    .textFieldStyle(.roundedBorder)
+
+                TextField("Command (e.g. curl -i $URL/health)", text: $newCommand)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.system(.body, design: .monospaced))
+
+                HStack {
+                    TextField("Specific Port (optional)", text: $newTargetPortString)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 160)
+
+                    Toggle("Run in Terminal", isOn: $newRunInTerminal)
+                }
+
+                HStack {
+                    Text("Icon:")
+                        .font(.caption)
+                    ForEach(availableIcons, id: \.self) { icon in
+                        Button {
+                            newIcon = icon
+                        } label: {
+                            Image(systemName: icon)
+                                .padding(4)
+                                .background(newIcon == icon ? Color.accentColor.opacity(0.2) : Color.clear, in: .rect(cornerRadius: 4))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                HStack {
+                    Spacer()
+                    Button("Cancel") {
+                        showingAddSheet = false
+                    }
+                    Button("Save Action") {
+                        let targetPort = Int(newTargetPortString.trimmingCharacters(in: .whitespacesAndNewlines))
+                        let action = CustomAction(
+                            id: UUID(),
+                            name: newName.isEmpty ? "Script" : newName,
+                            command: newCommand,
+                            icon: newIcon,
+                            targetPort: targetPort,
+                            runInTerminal: newRunInTerminal
+                        )
+                        actionManager.addAction(action)
+                        showingAddSheet = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(newCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+            .padding(16)
+            .frame(width: 400)
         }
     }
 }

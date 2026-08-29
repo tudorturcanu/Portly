@@ -134,6 +134,11 @@ struct MenuView: View {
             }
             .keyboardShortcut(",", modifiers: .command)
 
+            Button("History & Analytics…", systemImage: "clock.arrow.circlepath") {
+                PortHistoryWindow.show()
+            }
+            .keyboardShortcut("y", modifiers: .command)
+
             Divider()
 
             Menu("Copy Port List", systemImage: "list.clipboard") {

@@ -19,12 +19,16 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 - **Live port list** — rescans every 3 seconds while the panel is open; keeps a slower background loop running when it's closed so the badge stays current.
 - **One-click actions** — hover any row to open `localhost:<port>` in your browser, copy the URL, or stop the process (SIGTERM / SIGKILL). Hold ⌥ to force-kill.
 - **Open in Terminal & IDE** — right-click or inspect any process to open its Working Directory (`cwd`) in your favorite terminal (Ghostty, iTerm2, Warp, Alacritty, Kitty, Terminal.app) or code editor (Cursor, VS Code, Xcode).
+- **Port History & Analytics** — persistent timeline of past port sessions across launches with uptime, peak connections, and analytics (most used ports, session durations), plus CSV/JSON/Markdown export.
+- **Custom Developer Scripts & Actions** — execute parameterized shell commands (`$PORT`, `$PID`, `$CWD`, `$URL`, `$NAME`, `$HOST`) per-port or globally, configured in Settings.
+- **Docker Compose & Container Controls** — automatically identifies Compose projects and service names (e.g. `compose: web`), and provides one-click container restart and stop actions.
+- **Live Process & Container Log Streamer** — stream live unified logs or Docker container logs in a dedicated window with real-time text filtering and autoscroll.
+- **Integrated API & HTTP Request Tester** — dispatch custom HTTP requests (GET, POST, PUT, DELETE) with headers and JSON bodies directly from Process Details to test endpoints in milliseconds.
 - **Environment Variable (.env) Inspector** — inspect the environment variables of any running dev server with search, sensitive value masking, and one-click `.env` export.
 - **Smart Process & Framework Descriptors** — resolves Kubernetes (`kubectl port-forward`) targets to pod/service names with namespace tagging, parses SSH tunnels, and identifies web frameworks (Next.js, Vite, FastAPI, Django, Flask, Rails, Puma).
 - **One-Click Public Tunnels** — instantly expose local ports to the web via Cloudflare Tunnel (`cloudflared`), `localtunnel`, or `ngrok` with automatic URL copying and live tunnel indicators.
 - **Port pinning** — right-click any port to pin it. The menu bar icon switches to a warning triangle the moment a pinned port goes dark.
 - **Ghost rows** — recently-closed ports linger for 5 minutes so you can see what just went down.
-- **Docker support** — the direct-download build resolves Docker's port-proxy entries to the actual container name, so you see `myapp-db` instead of `com.docker.backend`.
 - **HTTP health probing** — optionally polls your dev servers every 15 seconds and shows a green/orange dot per port based on the HTTP status code. Database ports are skipped automatically.
 - **Notifications** — opt-in system notifications whenever a port opens or closes.
 - **Process details** — click any row for a popover with the executable path, PID, user, start time, CPU time, memory usage, full command line, environment variables, working directory, and any other ports the same process holds.

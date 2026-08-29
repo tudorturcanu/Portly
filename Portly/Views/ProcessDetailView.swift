@@ -13,11 +13,16 @@ struct ProcessDetailView: View {
     @State private var details = ProcessDetails()
     @State private var aliasText = ""
     @State private var showingEnvVars = false
+    @State private var showingRequestTester = false
     @State private var envSearchText = ""
     @State private var maskSecrets = true
 
     private var siblingPorts: [ListeningPort] {
         monitor.ports.filter { $0.pid == port.pid && $0.id != port.id }
+    }
+
+    private var customActions: [CustomAction] {
+        CustomActionManager.shared.actions(for: port)
     }
 
     private var filteredEnvVars: [EnvironmentVariable] {
@@ -45,10 +50,25 @@ struct ProcessDetailView: View {
                 if let path = port.executablePath {
                     pathRow(path)
                 }
+                if let container = port.containerName {
+                    detailRow("Container") { Text(container) }
+                }
+                if let proj = port.composeProject {
+                    detailRow("Compose Proj") { Text(proj) }
+                }
+                if let svc = port.composeService {
+                    detailRow("Compose Svc") { Text(svc) }
+                }
                 if let user = port.user {
                     detailRow("User") { Text(user) }
                 }
                 detailRow("PID") { Text(verbatim: "\(port.pid)") }
+                if port.establishedConnections > 0 {
+                    detailRow("Connections") {
+                        Text("\(port.establishedConnections) established")
+                            .foregroundStyle(.tint)
+                    }
+                }
                 if let startedAt = details.startedAt {
                     detailRow("Started") {
                         Text(startedAt, format: .relative(presentation: .named))
@@ -81,9 +101,19 @@ struct ProcessDetailView: View {
             }
             .font(.caption)
 
+            if port.networkProtocol == .tcp {
+                Divider()
+                requestTesterSection
+            }
+
             if let envVars = details.environmentVariables, !envVars.isEmpty {
                 Divider()
                 environmentSection(envVars: envVars)
+            }
+
+            if !customActions.isEmpty {
+                Divider()
+                customActionsSection
             }
 
             Divider()
@@ -91,7 +121,7 @@ struct ProcessDetailView: View {
             footerActions
         }
         .padding(12)
-        .frame(width: showingEnvVars ? 420 : 350)
+        .frame(width: (showingEnvVars || showingRequestTester) ? 440 : 360)
         .onAppear {
             aliasText = monitor.customAliases[port.port] ?? ""
             details = ProcessInspector.details(
@@ -215,6 +245,28 @@ struct ProcessDetailView: View {
         }
     }
 
+    private var requestTesterSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showingRequestTester.toggle()
+                }
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: showingRequestTester ? "chevron.down" : "chevron.right")
+                        .font(.caption2)
+                    Text("API / HTTP Tester")
+                        .font(.caption.weight(.semibold))
+                }
+            }
+            .buttonStyle(.plain)
+
+            if showingRequestTester {
+                QuickRequestView(port: port)
+            }
+        }
+    }
+
     private func environmentSection(envVars: [EnvironmentVariable]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
@@ -312,29 +364,67 @@ struct ProcessDetailView: View {
         }
     }
 
+    private var customActionsSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Custom Actions")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(customActions) { act in
+                        Button {
+                            let cwd = details.currentWorkingDirectory
+                            Task {
+                                await CustomActionManager.shared.run(act, on: port, workingDirectory: cwd)
+                            }
+                        } label: {
+                            Label(act.name, systemImage: act.icon)
+                        }
+                        .controlSize(.small)
+                        .buttonStyle(.bordered)
+                    }
+                }
+            }
+        }
+    }
+
     private var footerActions: some View {
         HStack(spacing: 8) {
             if let cwd = details.currentWorkingDirectory {
-                Button("Open in Terminal", systemImage: "terminal") {
+                Button("Terminal", systemImage: "terminal") {
                     TerminalLauncher.openInTerminal(at: cwd)
                 }
-                Button("Open in IDE", systemImage: "chevron.left.forwardslash.chevron.right") {
+                Button("IDE", systemImage: "chevron.left.forwardslash.chevron.right") {
                     TerminalLauncher.openInEditor(at: cwd)
                 }
             } else if let path = port.executablePath {
-                Button("Reveal in Finder", systemImage: "folder") {
+                Button("Finder", systemImage: "folder") {
                     NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: path)])
                 }
             }
 
+            Button("Logs", systemImage: "text.alignleft") {
+                ProcessLogWindow.show(for: port)
+            }
+
             if port.networkProtocol == .tcp, let url = port.localURL {
-                Button("Open in Browser", systemImage: "safari") {
+                Button("Browser", systemImage: "safari") {
                     NSWorkspace.shared.open(url)
                 }
             }
 
+            if let container = port.containerName {
+                Button("Restart", systemImage: "arrow.clockwise") {
+                    Task {
+                        await DockerManager.restartContainer(container)
+                        await monitor.refresh()
+                    }
+                }
+            }
+
             if !TunnelManager.shared.isTunneling(port.port) {
-                Button("Public Tunnel", systemImage: "globe") {
+                Button("Tunnel", systemImage: "globe") {
                     Task { await TunnelManager.shared.startTunnel(for: port.port) }
                 }
                 .disabled(TunnelManager.shared.isStarting(port.port))
@@ -369,4 +459,3 @@ struct ProcessDetailView_Previews: PreviewProvider {
         )
     }
 }
-
