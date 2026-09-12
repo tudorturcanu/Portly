@@ -23,6 +23,8 @@ final class PortMonitor {
     private(set) var customAliases: [Int: String] = [:]
     /// Port → last HTTP status code from the localhost health probe.
     private(set) var health: [Int: Int] = [:]
+    /// Port -> recent established connection counts over scan samples (for sparkline).
+    private(set) var connectionHistory: [Int: [Int]] = [:]
     private(set) var lastUpdated: Date?
     private(set) var isScanning = false
     var statusMessage: String?
@@ -82,6 +84,13 @@ final class PortMonitor {
             }
             lastUpdated = .now
             statusMessage = nil
+
+            for p in ports {
+                var hist = connectionHistory[p.port] ?? []
+                hist.append(p.establishedConnections)
+                if hist.count > 20 { hist.removeFirst() }
+                connectionHistory[p.port] = hist
+            }
 
             updateRecentlyClosed(from: previous, to: ports, hadBaseline: hadBaseline)
             TunnelManager.shared.pruneInactive(listeningPorts: ports)

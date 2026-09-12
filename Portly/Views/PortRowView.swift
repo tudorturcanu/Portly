@@ -47,10 +47,29 @@ struct PortRowView: View {
 
             if isHovering {
                 actions
-            } else if monitor.pinnedPorts.contains(port.port) {
-                Image(systemName: "pin.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+            } else {
+                HStack(spacing: 4) {
+                    if port.establishedConnections > 0 {
+                        HStack(spacing: 3) {
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width: 5, height: 5)
+                            Text("\(port.establishedConnections)")
+                                .font(.system(.caption2, design: .monospaced).weight(.medium))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.12), in: .capsule)
+                        .help("\(port.establishedConnections) active TCP connection(s)")
+                    }
+
+                    if monitor.pinnedPorts.contains(port.port) {
+                        Image(systemName: "pin.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
             }
         }
         .padding(.horizontal, 8)
@@ -108,6 +127,13 @@ struct PortRowView: View {
 
                 Button("Copy URL", systemImage: "doc.on.doc", action: copyURL)
                     .help("Copy http://localhost:\(port.port)")
+
+                if port.lanURL() != nil || TunnelManager.shared.tunnelURL(for: port.port) != nil {
+                    Button("Mobile QR Code", systemImage: "qrcode") {
+                        MobileQRCodeWindow.show(for: port)
+                    }
+                    .help("Show Mobile QR Code to scan on physical phone/tablet")
+                }
             }
 
             if port.isOwnedByCurrentUser, AppCapabilities.canTerminateProcesses {
@@ -149,6 +175,11 @@ struct PortRowView: View {
             if let lanURL = port.lanURL() {
                 Button("Copy LAN URL", systemImage: "wifi") {
                     copyToPasteboard(lanURL.absoluteString)
+                }
+            }
+            if port.lanURL() != nil || TunnelManager.shared.tunnelURL(for: port.port) != nil {
+                Button("Show Mobile QR Code…", systemImage: "qrcode") {
+                    MobileQRCodeWindow.show(for: port)
                 }
             }
             if let tunnelURL = TunnelManager.shared.tunnelURL(for: port.port) {

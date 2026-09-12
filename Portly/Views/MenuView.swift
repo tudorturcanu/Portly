@@ -139,6 +139,11 @@ struct MenuView: View {
             }
             .keyboardShortcut("y", modifiers: .command)
 
+            Button("Free a Port…", systemImage: "bolt.shield") {
+                PortFreeWindow.show(monitor: monitor)
+            }
+            .keyboardShortcut("f", modifiers: .command)
+
             Divider()
 
             Menu("Copy Port List", systemImage: "list.clipboard") {
@@ -253,6 +258,14 @@ struct MenuView: View {
                 .font(.headline)
         } description: {
             Text(emptyStateDescription)
+        } actions: {
+            if searchText.isEmpty {
+                Button("Free a Port…", systemImage: "bolt.shield") {
+                    PortFreeWindow.show(monitor: monitor)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
         }
     }
 

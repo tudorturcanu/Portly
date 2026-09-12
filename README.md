@@ -16,6 +16,9 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 
 **Key features:**
 
+- **Active TCP Connections & Client Inspector** — inspect connected client sockets with remote IP/port, origin (Localhost, LAN, WAN), TCP state, and local client application resolution (e.g. Google Chrome, curl), complete with real-time connection traffic sparklines.
+- **Instant Mobile Testing QR Codes** — display a crisp QR code for your LAN Wi-Fi URL or public tunnel with one click from any row or details popover to open dev servers instantly on physical iOS/Android phones.
+- **Port Clash Assistant ("Free a Port", ⌘F)** — inspect and terminate processes occupying any port to resolve annoying `EADDRINUSE` errors with one click and quick common presets (`:3000`, `:5173`, `:8080`, `:5432`).
 - **Live port list** — rescans every 3 seconds while the panel is open; keeps a slower background loop running when it's closed so the badge stays current.
 - **One-click actions** — hover any row to open `localhost:<port>` in your browser, copy the URL, or stop the process (SIGTERM / SIGKILL). Hold ⌥ to force-kill.
 - **Open in Terminal & IDE** — right-click or inspect any process to open its Working Directory (`cwd`) in your favorite terminal (Ghostty, iTerm2, Warp, Alacritty, Kitty, Terminal.app) or code editor (Cursor, VS Code, Xcode).
@@ -112,12 +115,20 @@ Portly/
 │   ├── SmartProcessDescriptor.swift # Recognizes Kubernetes, SSH, Docker, and Web Framework runtimes
 │   ├── TerminalLauncher.swift       # Discovers and launches terminal emulators & IDEs at cwd
 │   ├── TunnelManager.swift          # Manages background Cloudflare, Localtunnel, and ngrok tunnels
+│   ├── PortConnection.swift         # Value type for active TCP peer connections
+│   ├── PortClashManager.swift       # Inspects and frees ports occupied by conflicting processes
+│   ├── QRCodeGenerator.swift        # Sharp CoreImage QR code generator for mobile testing
 │   ├── AppCapabilities.swift        # Compile-time Standard vs. Sandboxed flags
 │   └── LaunchAtLogin.swift          # SMAppService wrapper
 └── Views/
     ├── MenuView.swift               # Main panel (search, port list, footer)
     ├── PortRowView.swift            # Individual port row with hover actions
     ├── ProcessDetailView.swift      # Click-to-open detail popover
+    ├── ConnectionSparklineView.swift# Real-time traffic activity sparkline
+    ├── MobileQRCodeView.swift       # Mobile QR code view for physical device testing
+    ├── MobileQRCodeWindow.swift     # NSWindow wrapper for QR code
+    ├── PortFreeView.swift           # Port clash assistant & process killer
+    ├── PortFreeWindow.swift         # NSWindow wrapper for Free a Port
     ├── DeadPinnedRowView.swift      # Placeholder row for a pinned port with no listener
     ├── ClosedPortRowView.swift      # Ghost row for recently-closed ports
     ├── SettingsView.swift           # Three-tab Settings window

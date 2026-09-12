@@ -14,6 +14,7 @@ struct ProcessDetailView: View {
     @State private var aliasText = ""
     @State private var showingEnvVars = false
     @State private var showingRequestTester = false
+    @State private var showingConnections = false
     @State private var envSearchText = ""
     @State private var maskSecrets = true
 
@@ -65,8 +66,14 @@ struct ProcessDetailView: View {
                 detailRow("PID") { Text(verbatim: "\(port.pid)") }
                 if port.establishedConnections > 0 {
                     detailRow("Connections") {
-                        Text("\(port.establishedConnections) established")
-                            .foregroundStyle(.tint)
+                        HStack(spacing: 6) {
+                            Text("\(port.establishedConnections) established")
+                                .foregroundStyle(.tint)
+                            let samples = monitor.connectionHistory[port.port] ?? [port.establishedConnections]
+                            ConnectionSparklineView(samples: samples, tintColor: .blue, height: 14)
+                                .frame(width: 48)
+                                .help("Recent connection activity")
+                        }
                     }
                 }
                 if let startedAt = details.startedAt {
@@ -101,6 +108,11 @@ struct ProcessDetailView: View {
             }
             .font(.caption)
 
+            if port.networkProtocol == .tcp && !port.activeConnections.isEmpty {
+                Divider()
+                activeConnectionsSection
+            }
+
             if port.networkProtocol == .tcp {
                 Divider()
                 requestTesterSection
@@ -121,7 +133,7 @@ struct ProcessDetailView: View {
             footerActions
         }
         .padding(12)
-        .frame(width: (showingEnvVars || showingRequestTester) ? 440 : 360)
+        .frame(width: (showingEnvVars || showingRequestTester || showingConnections) ? 440 : 360)
         .onAppear {
             aliasText = monitor.customAliases[port.port] ?? ""
             details = ProcessInspector.details(
@@ -178,11 +190,19 @@ struct ProcessDetailView: View {
             HStack(spacing: 4) {
                 Text(lanURL.absoluteString)
                     .textSelection(.enabled)
+                Button("Show Mobile QR Code", systemImage: "qrcode") {
+                    MobileQRCodeWindow.show(for: port)
+                }
+                .labelStyle(.iconOnly)
+                .buttonStyle(.borderless)
+                .help("Show Mobile QR Code to scan with phone camera")
+
                 Button("Copy", systemImage: "doc.on.doc") {
                     copyToPasteboard(lanURL.absoluteString)
                 }
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
+                .help("Copy LAN URL")
             }
         }
     }
@@ -196,6 +216,13 @@ struct ProcessDetailView: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                         .textSelection(.enabled)
+                    Button("Mobile QR Code", systemImage: "qrcode") {
+                        MobileQRCodeWindow.show(for: port)
+                    }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+                    .help("Show Mobile QR Code")
+
                     Button("Copy", systemImage: "doc.on.doc") {
                         copyToPasteboard(tunnelURL.absoluteString)
                     }
@@ -433,6 +460,87 @@ struct ProcessDetailView: View {
             Spacer()
         }
         .controlSize(.small)
+    }
+
+    private var activeConnectionsSection: some View {
+        DisclosureGroup(isExpanded: $showingConnections) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("\(port.activeConnections.count) peer connection(s)")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    let samples = monitor.connectionHistory[port.port] ?? [port.establishedConnections]
+                    ConnectionSparklineView(samples: samples, tintColor: .blue, height: 16)
+                        .frame(width: 80)
+                        .help("Real-time connection activity over time")
+                }
+                .padding(.bottom, 2)
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(port.activeConnections) { conn in
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(conn.state == "ESTABLISHED" ? Color.green : Color.orange)
+                                    .frame(width: 6, height: 6)
+
+                                VStack(alignment: .leading, spacing: 1) {
+                                    HStack(spacing: 4) {
+                                        Text(conn.remoteEndpointString)
+                                            .font(.system(.caption2, design: .monospaced).weight(.medium))
+                                            .textSelection(.enabled)
+
+                                        Text(conn.originDescription)
+                                            .font(.system(size: 9).weight(.semibold))
+                                            .foregroundStyle(.secondary)
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 1)
+                                            .background(.quaternary, in: .capsule)
+                                    }
+
+                                    if let client = conn.clientDisplayName {
+                                        Text(client)
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(.tint)
+                                    }
+                                }
+
+                                Spacer()
+
+                                Text(conn.state)
+                                    .font(.system(size: 9, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+
+                                Button("Copy Address", systemImage: "doc.on.doc") {
+                                    copyToPasteboard(conn.remoteEndpointString)
+                                }
+                                .labelStyle(.iconOnly)
+                                .buttonStyle(.borderless)
+                                .help("Copy remote address")
+                            }
+                            .padding(.vertical, 3)
+                            .padding(.horizontal, 6)
+                            .background(.quaternary.opacity(0.4), in: .rect(cornerRadius: 4))
+                        }
+                    }
+                }
+                .frame(maxHeight: 140)
+            }
+            .padding(.top, 4)
+        } label: {
+            HStack {
+                Label("Active Connections", systemImage: "point.3.connected.trianglepath.dotted")
+                    .font(.caption.weight(.medium))
+                Spacer()
+                Text("\(port.activeConnections.count)")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tint)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 1)
+                    .background(Color.accentColor.opacity(0.12), in: .capsule)
+            }
+        }
     }
 
     private func detailRow(_ label: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {

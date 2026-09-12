@@ -7,9 +7,9 @@ Allow users to instantly expose a local dev server to the internet.
 * **How it works**: A new quick-action button on hover (e.g., a "globe" icon). Clicking it spins up an `ngrok` or `cloudflared` tunnel in the background and copies the public URL to the clipboard.
 * **Why it's useful**: Developers frequently need to share local progress with clients/teammates or test webhooks (like Stripe or GitHub). This removes the need to open a terminal and type tunnel commands.
 
-## 2. Real-Time Network Activity & Connection Counts
-Show how much data is flowing through a port.
-* **How it works**: Display sparklines or simple metrics (rx/tx bytes/sec) for active data transfer on a specific port. Additionally, show the number of active, established TCP connections.
+## 2. Real-Time Network Activity & Connection Counts (Implemented)
+Show how much data is flowing through a port and inspect active client connections.
+* **How it works**: Displays active established TCP connections with client IP, port, origin (Localhost, LAN, WAN), and client process resolution. Provides live connection traffic sparklines and an Active Connections inspector in Process Details.
 * **Why it's useful**: Helps developers immediately identify if their dev server is hanging due to being hammered by requests, or if a websocket connection is successfully pushing data.
 
 ## 3. "Open in Terminal" & Log Tailing

@@ -85,9 +85,20 @@ enum PortScanner {
         var command: String?
         var user: String?
         var networkProtocol = NetworkProtocol.tcp
-        // A TCP address line can't be classified until the state field that
-        // follows it (TST=LISTEN / TST=ESTABLISHED) arrives.
         var pendingTCPPort: (address: String, port: Int)?
+        var pendingTCPConnection: (localAddress: String, localPort: Int, remoteAddress: String, remotePort: Int)?
+
+        struct RawConnection {
+            let pid: Int32?
+            let command: String?
+            let localAddress: String
+            let localPort: Int
+            let remoteAddress: String
+            let remotePort: Int
+            let state: String
+        }
+        var allConnections: [RawConnection] = []
+        var endpointOwner: [String: (command: String, pid: Int32)] = [:]
 
         func addListener(address: String, port: Int, protocol networkProtocol: NetworkProtocol) {
             guard let pid, let command,
@@ -114,6 +125,7 @@ enum PortScanner {
                 command = nil
                 user = nil
                 pendingTCPPort = nil
+                pendingTCPConnection = nil
             case "c":
                 command = value
             case "L":
@@ -122,6 +134,7 @@ enum PortScanner {
                 networkProtocol = NetworkProtocol(rawValue: value) ?? .tcp
             case "f":
                 pendingTCPPort = nil
+                pendingTCPConnection = nil
             case "n":
                 switch networkProtocol {
                 case .udp:
@@ -130,20 +143,46 @@ enum PortScanner {
                           let (address, port) = splitAddress(value) else { continue }
                     addListener(address: address, port: port, protocol: .udp)
                 case .tcp:
-                    // "local->remote" for connections, just "local" for listeners.
-                    let local = value.split(separator: "->", maxSplits: 1).first.map(String.init) ?? value
-                    pendingTCPPort = splitAddress(local)
+                    if value.contains("->") {
+                        let parts = value.split(separator: "->", maxSplits: 1)
+                        if let local = splitAddress(String(parts[0])),
+                           let remote = splitAddress(String(parts[1])) {
+                            pendingTCPPort = (local.address, local.port)
+                            pendingTCPConnection = (local.address, local.port, remote.address, remote.port)
+                            if let pid, let command {
+                                endpointOwner["\(local.address):\(local.port)"] = (command, pid)
+                            }
+                        }
+                    } else {
+                        pendingTCPPort = splitAddress(value)
+                        pendingTCPConnection = nil
+                    }
                 }
             case "T":
-                guard value.hasPrefix("ST="), let pending = pendingTCPPort else { continue }
-                pendingTCPPort = nil
-                switch value.dropFirst(3) {
-                case "LISTEN":
-                    addListener(address: pending.address, port: pending.port, protocol: .tcp)
-                case "ESTABLISHED":
-                    connectionCounts[pending.port, default: 0] += 1
-                default:
-                    break
+                guard value.hasPrefix("ST=") else { continue }
+                let state = String(value.dropFirst(3))
+                if let pending = pendingTCPPort, pendingTCPConnection == nil {
+                    pendingTCPPort = nil
+                    if state == "LISTEN" {
+                        addListener(address: pending.address, port: pending.port, protocol: .tcp)
+                    }
+                } else if let conn = pendingTCPConnection {
+                    pendingTCPPort = nil
+                    pendingTCPConnection = nil
+                    if state == "ESTABLISHED" {
+                        connectionCounts[conn.localPort, default: 0] += 1
+                    }
+                    allConnections.append(
+                        RawConnection(
+                            pid: pid,
+                            command: command,
+                            localAddress: conn.localAddress,
+                            localPort: conn.localPort,
+                            remoteAddress: conn.remoteAddress,
+                            remotePort: conn.remotePort,
+                            state: state
+                        )
+                    )
                 }
             default:
                 break
@@ -155,6 +194,21 @@ enum PortScanner {
                 var listener = listener
                 if listener.networkProtocol == .tcp {
                     listener.establishedConnections = connectionCounts[listener.port] ?? 0
+                    let conns = allConnections
+                        .filter { $0.localPort == listener.port }
+                        .map { raw in
+                            let owner = endpointOwner["\(raw.remoteAddress):\(raw.remotePort)"]
+                            return PortConnection(
+                                localAddress: raw.localAddress,
+                                localPort: raw.localPort,
+                                remoteAddress: raw.remoteAddress,
+                                remotePort: raw.remotePort,
+                                state: raw.state,
+                                clientProcessName: owner?.command,
+                                clientPid: owner?.pid
+                            )
+                        }
+                    listener.activeConnections = conns
                 }
                 return listener
             }

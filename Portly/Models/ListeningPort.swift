@@ -25,6 +25,7 @@ struct ListeningPort: Identifiable, Hashable {
     var customAlias: String?
     var smartDescriptor: String?
     var establishedConnections: Int = 0
+    var activeConnections: [PortConnection] = []
 
     var id: String { "\(pid):\(port):\(networkProtocol.rawValue)" }
 
