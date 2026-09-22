@@ -1,36 +1,36 @@
 //
-//  PortFreeWindow.swift
+//  PortBenchmarkWindow.swift
 //  Portly
 //
 
 import SwiftUI
 import AppKit
 
-enum PortFreeWindow {
-    private static var currentWindow: NSWindow?
+enum PortBenchmarkWindow {
+    private static var activeWindows: [Int: NSWindow] = [:]
 
-    static func show(for port: Int? = nil, monitor: PortMonitor?) {
-        if let existing = currentWindow {
+    static func show(for port: ListeningPort) {
+        if let existing = activeWindows[port.port] {
             existing.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
 
-        let hosting = NSHostingController(rootView: PortFreeView(initialPort: port, monitor: monitor))
+        let hosting = NSHostingController(rootView: PortBenchmarkView(port: port))
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.titled, .closable]
-        window.title = "Free a Port (Port Clash Resolver)"
+        window.title = "Benchmark Port :\(port.port)"
         window.isReleasedWhenClosed = false
         window.center()
 
-        currentWindow = window
+        activeWindows[port.port] = window
 
         NotificationCenter.default.addObserver(
             forName: NSWindow.willCloseNotification,
             object: window,
             queue: .main
         ) { _ in
-            currentWindow = nil
+            activeWindows.removeValue(forKey: port.port)
         }
 
         window.makeKeyAndOrderFront(nil)

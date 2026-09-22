@@ -34,7 +34,28 @@ A look back at what was running.
 * **How it works**: Expand the "Ghost rows" feature into a persistent local SQLite log. A new "History" tab could show what ports were active over the past week and what processes owned them.
 * **Why it's useful**: "What was that weird auth service running on 5050 last Tuesday?" - Solves the problem of ephemeral developer knowledge.
 
-## 7. Custom Scripts / Actions
+## 7. Custom Scripts / Actions (Implemented)
 Extensibility for power users.
-* **How it works**: Allow users to attach a custom shell script to a specific pinned port. For example, a "Run Migrations" or "Clear Cache" button that appears when hovering over port 3000.
+* **How it works**: Allow users to attach a custom shell script to a specific pinned port or globally, with variable interpolation (`$PORT`, `$PID`, `$CWD`, `$URL`, `$NAME`, `$HOST`).
 * **Why it's useful**: Turns Portly from a read-only monitoring tool into a personalized command center for their specific project.
+
+## 8. Dev Profiles & Project Stacks (Implemented)
+Group ports into named stacks (e.g. "Full Stack Web", "Microservices").
+* **How it works**: Dedicated Settings tab to create profiles with custom or selected active ports. Menu view filter allows focusing on a single project stack while alerting to any stopped or missing dependencies.
+* **Why it's useful**: Developers juggling multiple projects can instantly see if all required dependencies for a specific repo or feature branch are running.
+
+## 9. One-Click Process & Service Restarter (Implemented)
+Restart native servers or Docker containers directly from the UI.
+* **How it works**: Reads the original command arguments and working directory, issues a graceful SIGTERM, verifies port clearance, and re-spawns the server via the user's login shell. For Docker, executes a graceful container restart.
+* **Why it's useful**: Eliminates the cycle of having to switch to a terminal to kill and restart unresponsive dev servers.
+
+## 10. HTTP Latency Probing & Port Benchmarking (Implemented)
+Measure real-time server responsiveness and benchmark throughput.
+* **How it works**: HTTP health probes now track latency in milliseconds. Dedicated benchmark window sends rapid request batches (5x, 10x, 25x) to measure minimum, average, maximum response times, requests per second, and assigns a responsiveness rating.
+* **Why it's useful**: Quickly identify performance bottlenecks or frozen event loops during development.
+
+## 11. Built-in Static Folder HTTP Server ("Serve Folder on Port") (Implemented)
+Instantly host arbitrary folders over HTTP.
+* **How it works**: Accessible from the gear menu, spins up macOS's built-in Python 3 HTTP server (`python3 -m http.server <port> --directory <path>`) with a suggested free port, directory picker, and live server management.
+* **Why it's useful**: Perfect for testing static HTML/JS builds, documentation preview sites, or serving local test fixtures without installing additional tools.
+

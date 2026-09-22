@@ -27,6 +27,9 @@ struct MenuView: View {
         if !showUDPPorts {
             ports = ports.filter { $0.networkProtocol == .tcp }
         }
+        if let activeProfile = DevProfileManager.shared.activeProfile {
+            ports = ports.filter { activeProfile.ports.contains($0.port) }
+        }
         if !searchText.isEmpty {
             ports = ports.filter {
                 $0.displayName.localizedStandardContains(searchText)
@@ -38,6 +41,12 @@ struct MenuView: View {
             }
         }
         return ports
+    }
+
+    private var stoppedProfilePorts: [Int] {
+        guard let activeProfile = DevProfileManager.shared.activeProfile else { return [] }
+        let activePortNumbers = Set(monitor.ports.map(\.port))
+        return activeProfile.ports.filter { !activePortNumbers.contains($0) }
     }
 
     private var pinnedVisible: [ListeningPort] {
@@ -55,7 +64,7 @@ struct MenuView: View {
     }
 
     private var hasListContent: Bool {
-        !visiblePorts.isEmpty || !monitor.deadPinnedPorts.isEmpty || !visibleGhosts.isEmpty
+        !visiblePorts.isEmpty || !monitor.deadPinnedPorts.isEmpty || !visibleGhosts.isEmpty || !stoppedProfilePorts.isEmpty
     }
 
     var body: some View {
@@ -63,6 +72,11 @@ struct MenuView: View {
             header
                 .padding(.horizontal, 12)
                 .padding(.vertical, 9)
+
+            if !DevProfileManager.shared.profiles.isEmpty {
+                Divider()
+                profilePickerBar
+            }
 
             Divider()
 
@@ -144,6 +158,10 @@ struct MenuView: View {
             }
             .keyboardShortcut("f", modifiers: .command)
 
+            Button("Serve Folder on Port…", systemImage: "folder.badge.gearshape") {
+                StaticServerWindow.show(monitor: monitor)
+            }
+
             Divider()
 
             Menu("Copy Port List", systemImage: "list.clipboard") {
@@ -206,6 +224,52 @@ struct MenuView: View {
         .background(.quaternary.opacity(0.6), in: .rect(cornerRadius: 6))
     }
 
+    private var profilePickerBar: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "square.stack.3d.up")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Text("Profile:")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Menu {
+                Button("All Ports") {
+                    DevProfileManager.shared.activeProfileId = nil
+                }
+                Divider()
+                ForEach(DevProfileManager.shared.profiles) { profile in
+                    Button(profile.name) {
+                        DevProfileManager.shared.activeProfileId = profile.id
+                    }
+                }
+            } label: {
+                Text(DevProfileManager.shared.activeProfile?.name ?? "All")
+                    .font(.caption.weight(.medium))
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+
+            Spacer()
+
+            if DevProfileManager.shared.activeProfile != nil {
+                Button {
+                    DevProfileManager.shared.activeProfileId = nil
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Clear profile filter")
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 5)
+        .background(Color.accentColor.opacity(DevProfileManager.shared.activeProfile != nil ? 0.08 : 0.03))
+    }
+
     private var portList: some View {
         ScrollView {
             VStack(spacing: 1) {
@@ -224,6 +288,13 @@ struct MenuView: View {
 
                 ForEach(unpinnedVisible) { port in
                     PortRowView(port: port, monitor: monitor)
+                }
+
+                if !stoppedProfilePorts.isEmpty {
+                    sectionHeader("Stopped in Profile")
+                    ForEach(stoppedProfilePorts, id: \.self) { port in
+                        StoppedProfileRowView(port: port, monitor: monitor)
+                    }
                 }
 
                 if !visibleGhosts.isEmpty {

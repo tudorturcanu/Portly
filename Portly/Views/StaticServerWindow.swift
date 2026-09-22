@@ -1,25 +1,25 @@
 //
-//  PortFreeWindow.swift
+//  StaticServerWindow.swift
 //  Portly
 //
 
 import SwiftUI
 import AppKit
 
-enum PortFreeWindow {
+enum StaticServerWindow {
     private static var currentWindow: NSWindow?
 
-    static func show(for port: Int? = nil, monitor: PortMonitor?) {
+    static func show(monitor: PortMonitor?) {
         if let existing = currentWindow {
             existing.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             return
         }
 
-        let hosting = NSHostingController(rootView: PortFreeView(initialPort: port, monitor: monitor))
+        let hosting = NSHostingController(rootView: StaticServerView(monitor: monitor))
         let window = NSWindow(contentViewController: hosting)
         window.styleMask = [.titled, .closable]
-        window.title = "Free a Port (Port Clash Resolver)"
+        window.title = "Serve Folder on Port"
         window.isReleasedWhenClosed = false
         window.center()
 

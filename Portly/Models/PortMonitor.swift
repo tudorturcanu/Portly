@@ -23,6 +23,8 @@ final class PortMonitor {
     private(set) var customAliases: [Int: String] = [:]
     /// Port → last HTTP status code from the localhost health probe.
     private(set) var health: [Int: Int] = [:]
+    /// Port -> response latency in milliseconds from HTTP probe.
+    private(set) var latencies: [Int: Double] = [:]
     /// Port -> recent established connection counts over scan samples (for sparkline).
     private(set) var connectionHistory: [Int: [Int]] = [:]
     private(set) var lastUpdated: Date?
@@ -253,15 +255,19 @@ final class PortMonitor {
 
         if !due.isEmpty {
             for port in due { lastProbeAt[port] = now }
-            await withTaskGroup(of: (Int, Int?).self) { group in
+            await withTaskGroup(of: (Int, Int?, Double?).self) { group in
                 for port in due.prefix(16) {
                     group.addTask { await Self.probe(port: port) }
                 }
-                for await (port, status) in group {
+                for await (port, status, latency) in group {
                     if let status {
                         health[port] = status
+                        if let latency {
+                            latencies[port] = latency
+                        }
                     } else {
                         health.removeValue(forKey: port)
+                        latencies.removeValue(forKey: port)
                     }
                 }
             }
@@ -269,6 +275,7 @@ final class PortMonitor {
 
         // Drop results for ports that stopped listening.
         health = health.filter { candidates.contains($0.key) }
+        latencies = latencies.filter { candidates.contains($0.key) }
     }
 
     private static let probeSession: URLSession = {
@@ -278,14 +285,17 @@ final class PortMonitor {
         return URLSession(configuration: configuration)
     }()
 
-    private static func probe(port: Int) async -> (Int, Int?) {
-        guard let url = URL(string: "http://localhost:\(port)/") else { return (port, nil) }
+    private static func probe(port: Int) async -> (Int, Int?, Double?) {
+        guard let url = URL(string: "http://localhost:\(port)/") else { return (port, nil, nil) }
+        let start = ContinuousClock.now
         do {
             let (_, response) = try await probeSession.data(from: url)
-            return (port, (response as? HTTPURLResponse)?.statusCode)
+            let elapsed = start.duration(to: .now)
+            let ms = Double(elapsed.components.seconds) * 1000.0 + Double(elapsed.components.attoseconds) / 1_000_000_000_000_000.0
+            return (port, (response as? HTTPURLResponse)?.statusCode, ms)
         } catch {
             // Not speaking HTTP (or not answering) — show no health dot.
-            return (port, nil)
+            return (port, nil, nil)
         }
     }
 }

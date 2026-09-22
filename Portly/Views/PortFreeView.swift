@@ -7,6 +7,7 @@ import SwiftUI
 
 /// Assistant to inspect and terminate processes occupying a port to resolve EADDRINUSE conflicts.
 struct PortFreeView: View {
+    var initialPort: Int? = nil
     var monitor: PortMonitor?
 
     @State private var portInput = ""
@@ -35,7 +36,10 @@ struct PortFreeView: View {
         .padding(18)
         .frame(width: 440, height: 420)
         .task {
-            if let first = monitor?.ports.first {
+            if let target = initialPort {
+                portInput = String(target)
+                await checkPort(target)
+            } else if let first = monitor?.ports.first {
                 portInput = String(first.port)
                 await checkPort(first.port)
             } else {

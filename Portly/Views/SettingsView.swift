@@ -24,6 +24,9 @@ struct SettingsView: View {
 
             ActionsSettingsTab()
                 .tabItem { Label("Actions", systemImage: "command") }
+
+            ProfilesSettingsTab(monitor: monitor)
+                .tabItem { Label("Profiles", systemImage: "square.stack.3d.up") }
         }
         .frame(width: 480)
         .scenePadding()

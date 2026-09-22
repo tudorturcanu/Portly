@@ -76,6 +76,16 @@ struct ProcessDetailView: View {
                         }
                     }
                 }
+                if let ms = monitor.latencies[port.port] {
+                    detailRow("Latency") {
+                        HStack(spacing: 4) {
+                            Text(String(format: "%.1f ms", ms))
+                                .foregroundStyle(ms < 50 ? .green : .orange)
+                            Text("(HTTP probe)")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 if let startedAt = details.startedAt {
                     detailRow("Started") {
                         Text(startedAt, format: .relative(presentation: .named))
@@ -441,13 +451,20 @@ struct ProcessDetailView: View {
                 }
             }
 
-            if let container = port.containerName {
+            if port.containerName != nil || (port.isOwnedByCurrentUser && AppCapabilities.canTerminateProcesses) {
                 Button("Restart", systemImage: "arrow.clockwise") {
                     Task {
-                        await DockerManager.restartContainer(container)
-                        await monitor.refresh()
+                        await ProcessRestarter.restart(port, monitor: monitor)
                     }
                 }
+                .help("Restart dev server")
+            }
+
+            if port.networkProtocol == .tcp {
+                Button("Benchmark", systemImage: "gauge.with.needle") {
+                    PortBenchmarkWindow.show(for: port)
+                }
+                .help("Benchmark latency and throughput")
             }
 
             if !TunnelManager.shared.isTunneling(port.port) {

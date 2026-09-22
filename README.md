@@ -16,6 +16,10 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 
 **Key features:**
 
+- **Dev Profiles (Project Stacks)** — organize related ports into named project profiles (e.g. "Full Stack Web", "Data Pipeline"). Filter the menu bar view to see only that project's active listeners, with instant visibility into stopped/missing dependencies.
+- **One-Click Process & Container Restarter** — bounce any native local dev server or Docker container with one click; captures the original working directory and arguments, signals termination, and respawns cleanly via your login shell.
+- **HTTP Latency Probing & Port Benchmarking** — live response latency tracking on HTTP health probes, plus a dedicated latency & throughput benchmarking tool to measure min/avg/max response time and request rate with instant rating badges and shareable reports.
+- **Built-in Static File Server ("Serve Folder on Port")** — instantly host any local folder, build output, or mock API fixture on an open HTTP port directly from the menu bar using macOS's built-in Python HTTP server.
 - **Active TCP Connections & Client Inspector** — inspect connected client sockets with remote IP/port, origin (Localhost, LAN, WAN), TCP state, and local client application resolution (e.g. Google Chrome, curl), complete with real-time connection traffic sparklines.
 - **Instant Mobile Testing QR Codes** — display a crisp QR code for your LAN Wi-Fi URL or public tunnel with one click from any row or details popover to open dev servers instantly on physical iOS/Android phones.
 - **Port Clash Assistant ("Free a Port", ⌘F)** — inspect and terminate processes occupying any port to resolve annoying `EADDRINUSE` errors with one click and quick common presets (`:3000`, `:5173`, `:8080`, `:5432`).
@@ -83,6 +87,8 @@ Portly supports two execution modes:
 4. **Act on a port** — hover a row to reveal quick-action buttons, or right-click for the full context menu:
    - Open in Browser
    - Copy URL
+   - Restart Process / Container
+   - Benchmark Latency & Throughput
    - Start / Stop Public Tunnel (Cloudflare / ngrok)
    - Open in Terminal / IDE
    - Copy `curl` / `lsof` command
@@ -94,6 +100,8 @@ Portly supports two execution modes:
    - *General* — Launch at Login, menu bar badge count
    - *Filtering* — show/hide macOS system processes and UDP ports
    - *Notifications* — port open/close notifications, HTTP health probing
+   - *Actions* — custom shell scripts and parameterized commands
+   - *Profiles* — define and manage project port stacks
 
 ---
 

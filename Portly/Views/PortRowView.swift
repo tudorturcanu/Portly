@@ -24,7 +24,7 @@ struct PortRowView: View {
                     Circle()
                         .fill(status < 400 ? Color.green : Color.orange)
                         .frame(width: 7, height: 7)
-                        .help("localhost:\(port.port) answered HTTP \(status)")
+                        .help(healthTooltip(for: port.port, status: status))
                         .accessibilityLabel("HTTP status \(status)")
                 }
                 Text(verbatim: ":\(port.port)")
@@ -137,6 +137,11 @@ struct PortRowView: View {
             }
 
             if port.isOwnedByCurrentUser, AppCapabilities.canTerminateProcesses {
+                Button("Restart Process", systemImage: "arrow.clockwise") {
+                    Task { await ProcessRestarter.restart(port, monitor: monitor) }
+                }
+                .help("Restart \(port.displayName)")
+
                 Button("Stop Process", systemImage: "xmark.circle.fill", role: .destructive) {
                     stop(force: NSEvent.modifierFlags.contains(.option))
                 }
@@ -198,6 +203,9 @@ struct PortRowView: View {
             Button("Copy curl Command", systemImage: "terminal") {
                 copyToPasteboard("curl http://localhost:\(port.port)/")
             }
+            Button("Benchmark Latency…", systemImage: "gauge.with.needle") {
+                PortBenchmarkWindow.show(for: port)
+            }
         }
 
         Button("Copy lsof Command", systemImage: "terminal") {
@@ -256,6 +264,9 @@ struct PortRowView: View {
         if port.isOwnedByCurrentUser {
             Divider()
             if AppCapabilities.canTerminateProcesses {
+                Button("Restart Process", systemImage: "arrow.clockwise") {
+                    Task { await ProcessRestarter.restart(port, monitor: monitor) }
+                }
                 Button("Stop Process", systemImage: "stop.circle") {
                     stop(force: false)
                 }
@@ -271,6 +282,13 @@ struct PortRowView: View {
                 }
             }
         }
+    }
+
+    private func healthTooltip(for portNumber: Int, status: Int) -> String {
+        if let ms = monitor.latencies[portNumber] {
+            return "localhost:\(portNumber) answered HTTP \(status) (\(String(format: "%.1f ms", ms)))"
+        }
+        return "localhost:\(portNumber) answered HTTP \(status)"
     }
 
     private func openInTerminal() {
