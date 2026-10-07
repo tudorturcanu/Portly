@@ -8,6 +8,8 @@ Portly is a lightweight macOS menu bar app that shows every process currently li
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange?style=flat-square&logo=swift)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
 
+<img src="docs/portly-menu-bar.jpg" width="840" alt="Portly open from the macOS menu bar, listing three listening ports with their process names, addresses and PIDs">
+
 ---
 
 ## What it does
