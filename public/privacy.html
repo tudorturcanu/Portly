@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy for Portly, the developer utility for macOS.">
+    <title>Privacy Policy - Portly</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <a href="privacy.html" class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/>
+            </svg>
+            <span>Portly</span>
+        </a>
+        <nav>
+            <a href="privacy.html" class="active">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="support.html">Support</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>Privacy Policy</h1>
+            <p>Last updated: July 15, 2026</p>
+        </div>
+
+        <div class="card">
+            <section>
+                <h2>1. Commitment to Privacy</h2>
+                <p>Portly is designed with privacy as a foundational principle. Because Portly is a local macOS developer tool for monitoring local network ports and processes, it does not require, collect, or transmit any of your personal data or application metrics. Your development environment stays private and on your device.</p>
+            </section>
+
+            <section>
+                <h2>2. Data Collection & Processing</h2>
+                <p>Portly operates entirely on your local machine. It collects local telemetry from your system to display active ports:</p>
+                <ul>
+                    <li><strong>Network Listening Ports:</strong> Portly queries active sockets (TCP and UDP) on your local machine.</li>
+                    <li><strong>Local Process Information:</strong> Portly matches listening ports to their local parent process names, Process IDs (PIDs), and command-line arguments.</li>
+                    <li><strong>Docker Integration:</strong> Portly connects to your local Docker socket (when available) to resolve container names for listening ports.</li>
+                </ul>
+                <p><strong>Absolutely none of this data is sent over the internet or shared with third parties.</strong> All queries, scanning, and resolving are done locally inside the sandboxed environment (or within your user session scope) and are stored in volatile memory only while the app is running.</p>
+            </section>
+
+            <section>
+                <h2>3. Local Storage & Preferences</h2>
+                <p>Portly saves your user preferences (such as showing UDP ports, system processes, or launch-at-login options) locally on your Mac using standard macOS <code>UserDefaults</code>. Pinned ports are also stored locally so they persist across application restarts. This data is never synchronized to external servers.</p>
+            </section>
+
+            <section>
+                <h2>4. Third-Party Services & Analytics</h2>
+                <p>Portly does not implement third-party analytics libraries (such as Google Analytics or Firebase), tracking pixels, or advertising services. No telemetry reports or crash logs are automatically uploaded. If you report a crash or an issue manually via email, we only use the information you explicitly provide to help diagnose and resolve the issue.</p>
+            </section>
+
+            <section>
+                <h2>5. Changes to This Policy</h2>
+                <p>We may update our Privacy Policy from time to time. Any changes will be posted on this page with the updated date at the top.</p>
+            </section>
+
+            <section>
+                <h2>6. Contact Us</h2>
+                <p>If you have any questions or suggestions about this Privacy Policy, do not hesitate to contact us at:</p>
+                <p>Email: <a href="mailto:alice.turcanu91@gmail.com" style="color: var(--accent); font-weight: 500;">alice.turcanu91@gmail.com</a></p>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="support.html">Support</a>
+        </div>
+        <p>&copy; 2026 Portly. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

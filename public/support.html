@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Support and Help Center for Portly, the developer utility for macOS.">
+    <title>Support & Contact - Portly</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <a href="privacy.html" class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.53c-.26-.81-1-1.4-1.9-1.4h-1v-3c0-.55-.45-1-1-1h-6v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.4z"/>
+            </svg>
+            <span>Portly</span>
+        </a>
+        <nav>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="support.html" class="active">Support</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h1>Support & Help Center</h1>
+            <p>Get assistance, read FAQs, or get in touch regarding Portly.</p>
+        </div>
+
+        <div class="card">
+            <section>
+                <h2>Frequently Asked Questions</h2>
+                <p>Browse through quick answers to common questions about using Portly.</p>
+
+                <div class="faq-item">
+                    <div class="faq-question">How does Portly find listening ports?</div>
+                    <div class="faq-answer">
+                        Portly inspects active network sockets (both TCP and UDP) on your local macOS machine using lightweight system queries, linking each socket back to its active Parent Process ID (PID) and command line arguments.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Does Portly support Docker containers?</div>
+                    <div class="faq-answer">
+                        Yes! Portly detects when Docker Desktop is running and connects to the local Docker Unix socket. It resolves port mappings automatically, displaying the actual Docker container names in the menu bar panel.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Why are macOS system processes hidden?</div>
+                    <div class="faq-answer">
+                        By default, system processes (like <code>ControlCenter</code> or <code>rapportd</code>) are hidden to keep your list clean and focused on your active development servers. You can show them at any time by toggling "Show macOS System Processes" from the settings gear menu.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">Can I terminate processes directly from Portly?</div>
+                    <div class="faq-answer">
+                        Yes. Hovering over a row displays a "Stop" button. Clicking this button sends a standard SIGTERM signal to terminate the local process listening on that port, saving you a trip to the Terminal.
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">How can I launch Portly automatically on startup?</div>
+                    <div class="faq-answer">
+                        You can enable "Launch at Login" from the settings gear menu inside the Portly panel to configure the application to launch automatically when you sign into your macOS account.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="card">
+            <section>
+                <h2>Need More Help?</h2>
+                <p>If your question isn't answered above, or if you'd like to report a bug or suggest a feature, please reach out to us using the options below.</p>
+                
+                <div class="support-options">
+                    <div class="support-card">
+                        <h3>Email Support</h3>
+                        <p>Send an email directly to our support inbox. We will get back to you as soon as possible.</p>
+                        <a href="mailto:alice.turcanu91@gmail.com?subject=Portly%20Support%20Request" class="btn">Email Support</a>
+                    </div>
+                    <div class="support-card">
+                        <h3>GitHub Repository</h3>
+                        <p>Report issues, suggest improvements, or view source code directly on GitHub.</p>
+                        <a href="https://github.com/tudorturcanusw/Portly" target="_blank" class="btn">View on GitHub</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="terms.html">Terms of Service</a>
+            <a href="support.html">Support</a>
+        </div>
+        <p>&copy; 2026 Portly. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Interactive Accordion JavaScript
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const faqItem = button.parentElement;
+                
+                // Toggle active class on current FAQ item
+                faqItem.classList.toggle('active');
+                
+                // Collapse other open items if desired (accordion behavior)
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    if (item !== faqItem) {
+                        item.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
