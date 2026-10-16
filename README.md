@@ -18,6 +18,12 @@ Click the connected-dots icon in your menu bar and instantly see every port with
 
 **Key features:**
 
+- **Network Interface & Exposure Security Inspector** — automatically audits whether ports are bound to loopback only (`127.0.0.1` / `::1`) or exposed across your local Wi-Fi network (`0.0.0.0` / `*`), with visual security badges, filter options, and exposure warnings.
+- **Common Endpoints & Quick Route Launcher** — jump directly into Swagger UI, OpenAPI docs, GraphiQL, API endpoints, or health probes (`/docs`, `/swagger`, `/api`, `/graphql`, `/health`, `/metrics`, `/admin`) directly from any row's context menu or Process Details.
+- **Multi-Language HTTP Request Code Generator** — generate reproducible code snippets for tested requests in one click (cURL, JavaScript `fetch()`, Python `requests`, and Swift `URLSession`).
+- **HTTP Response Headers Inspector** — inspect all response headers returned by local dev servers with clean key-value formatting and one-click copy.
+- **Developer Sticky Notes & Runbook Annotations** — attach persistent notes, test credentials, or operational reminders to any port number, fully searchable in the menu bar.
+- **Interactive Port Sorting & Security Filtering** — sort ports by Port Number, Process Name, Active Traffic Connections, or Exposure status, and isolate LAN-exposed or Docker listeners instantly.
 - **Dev Profiles (Project Stacks)** — organize related ports into named project profiles (e.g. "Full Stack Web", "Data Pipeline"). Filter the menu bar view to see only that project's active listeners, with instant visibility into stopped/missing dependencies.
 - **One-Click Process & Container Restarter** — bounce any native local dev server or Docker container with one click; captures the original working directory and arguments, signals termination, and respawns cleanly via your login shell.
 - **HTTP Latency Probing & Port Benchmarking** — live response latency tracking on HTTP health probes, plus a dedicated latency & throughput benchmarking tool to measure min/avg/max response time and request rate with instant rating badges and shareable reports.

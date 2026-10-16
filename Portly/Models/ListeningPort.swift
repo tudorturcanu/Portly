@@ -10,6 +10,22 @@ enum NetworkProtocol: String {
     case udp = "UDP"
 }
 
+enum InterfaceExposure: String, CaseIterable, Identifiable {
+    case localhost = "Localhost Only"
+    case lan = "LAN Exposed"
+    case custom = "Specific Interface"
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .localhost: return "shield.lefthalf.filled"
+        case .lan: return "network.badge.shield.half.filled"
+        case .custom: return "network"
+        }
+    }
+}
+
 /// One listening socket, deduplicated per process, port, and protocol.
 struct ListeningPort: Identifiable, Hashable {
     let port: Int
@@ -23,6 +39,7 @@ struct ListeningPort: Identifiable, Hashable {
     var composeProject: String?
     var composeService: String?
     var customAlias: String?
+    var customNote: String?
     var smartDescriptor: String?
     var establishedConnections: Int = 0
     var activeConnections: [PortConnection] = []
@@ -34,10 +51,50 @@ struct ListeningPort: Identifiable, Hashable {
 
     var displayAddress: String { isWildcard ? "all interfaces" : address }
 
+    /// True when the socket is bound to a loopback interface only (127.0.0.1, ::1, localhost).
+    var isLoopbackOnly: Bool {
+        address == "127.0.0.1" || address == "::1" || address.lowercased() == "localhost"
+    }
+
+    /// True when the socket is bound to all network interfaces (wildcard), exposing it to the local Wi-Fi / LAN.
+    var isLANExposed: Bool {
+        isWildcard || address == "0.0.0.0" || address == "::" || address == "[::]"
+    }
+
+    var exposure: InterfaceExposure {
+        if isLANExposed {
+            return .lan
+        } else if isLoopbackOnly {
+            return .localhost
+        } else {
+            return .custom
+        }
+    }
+
+    var exposureSecuritySummary: String {
+        switch exposure {
+        case .localhost:
+            return "Loopback only (\(address)) — isolated to this Mac."
+        case .lan:
+            return "Exposed to all interfaces (\(displayAddress)) — accessible by devices on your local Wi-Fi."
+        case .custom:
+            return "Bound to specific address (\(address))."
+        }
+    }
+
     /// The custom alias if set, otherwise Docker container name if container-published, else process name.
     var displayName: String { customAlias ?? containerName ?? processName }
 
     var localURL: URL? { URL(string: "http://localhost:\(port)") }
+
+    /// Returns a localhost URL appended with the specified route path.
+    func routeURL(path: String) -> URL? {
+        var clean = path.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !clean.hasPrefix("/") {
+            clean = "/" + clean
+        }
+        return URL(string: "http://localhost:\(port)\(clean)")
+    }
 
     /// Returns the local network (LAN) URL e.g. http://192.168.1.150:3000
     func lanURL(ipAddress: String? = NetworkUtility.localIPAddress) -> URL? {

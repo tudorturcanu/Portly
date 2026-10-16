@@ -14,6 +14,7 @@ final class PortMonitor {
     static let probeDefaultsKey = "probeLocalhostHTTP"
     private static let pinnedDefaultsKey = "pinnedPorts"
     private static let aliasesDefaultsKey = "customPortAliases"
+    private static let notesDefaultsKey = "customPortNotes"
     private static let ghostLifetime: TimeInterval = 300
     private static let probeInterval: TimeInterval = 15
 
@@ -21,6 +22,7 @@ final class PortMonitor {
     private(set) var recentlyClosed: [ClosedPort] = []
     private(set) var pinnedPorts: Set<Int> = []
     private(set) var customAliases: [Int: String] = [:]
+    private(set) var customNotes: [Int: String] = [:]
     /// Port → last HTTP status code from the localhost health probe.
     private(set) var health: [Int: Int] = [:]
     /// Port -> response latency in milliseconds from HTTP probe.
@@ -42,9 +44,17 @@ final class PortMonitor {
             }
             self.customAliases = loaded
         }
+        if let storedNotes = UserDefaults.standard.dictionary(forKey: Self.notesDefaultsKey) as? [String: String] {
+            var loadedNotes: [Int: String] = [:]
+            for (key, val) in storedNotes {
+                if let p = Int(key) { loadedNotes[p] = val }
+            }
+            self.customNotes = loadedNotes
+        }
         self.ports = ports.map { p in
             var copy = p
             if let alias = self.customAliases[p.port] { copy.customAlias = alias }
+            if let note = self.customNotes[p.port] { copy.customNote = note }
             return copy
         }
         pinnedPorts = Set(UserDefaults.standard.array(forKey: Self.pinnedDefaultsKey) as? [Int] ?? [])
@@ -82,6 +92,7 @@ final class PortMonitor {
             ports = scanned.map { p in
                 var copy = p
                 copy.customAlias = customAliases[p.port]
+                copy.customNote = customNotes[p.port]
                 return copy
             }
             lastUpdated = .now
@@ -125,6 +136,30 @@ final class PortMonitor {
         ports = ports.map { p in
             var copy = p
             copy.customAlias = customAliases[p.port]
+            return copy
+        }
+    }
+
+    // MARK: - Custom Notes
+
+    func setNote(_ note: String?, for port: Int) {
+        let trimmed = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let trimmed, !trimmed.isEmpty {
+            customNotes[port] = trimmed
+        } else {
+            customNotes.removeValue(forKey: port)
+        }
+
+        var dict: [String: String] = [:]
+        for (key, val) in customNotes {
+            dict[String(key)] = val
+        }
+        UserDefaults.standard.set(dict, forKey: Self.notesDefaultsKey)
+
+        ports = ports.map { p in
+            guard p.port == port else { return p }
+            var copy = p
+            copy.customNote = trimmed.flatMap { $0.isEmpty ? nil : $0 }
             return copy
         }
     }

@@ -49,6 +49,20 @@ struct PortRowView: View {
                 actions
             } else {
                 HStack(spacing: 4) {
+                    if port.isLANExposed {
+                        Image(systemName: "network.badge.shield.half.filled")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                            .help("LAN Exposed: bound to \(port.displayAddress), reachable from local network")
+                    }
+
+                    if let note = port.customNote {
+                        Image(systemName: "note.text")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .help("Note: \(note)")
+                    }
+
                     if port.establishedConnections > 0 {
                         HStack(spacing: 3) {
                             Circle()
@@ -176,6 +190,15 @@ struct PortRowView: View {
 
         if port.networkProtocol == .tcp {
             Button("Open in Browser", systemImage: "safari", action: openInBrowser)
+            Menu("Open Route…", systemImage: "link") {
+                Button("/ (Root)") { openRoute("/") }
+                Button("/api") { openRoute("/api") }
+                Button("/docs (Swagger/OpenAPI)") { openRoute("/docs") }
+                Button("/swagger") { openRoute("/swagger") }
+                Button("/graphql") { openRoute("/graphql") }
+                Button("/health") { openRoute("/health") }
+                Button("/admin") { openRoute("/admin") }
+            }
             Button("Copy URL", systemImage: "doc.on.doc", action: copyURL)
             if let lanURL = port.lanURL() {
                 Button("Copy LAN URL", systemImage: "wifi") {
@@ -213,6 +236,22 @@ struct PortRowView: View {
         }
         Button("Copy PID", systemImage: "number") {
             copyToPasteboard("\(port.pid)")
+        }
+
+        Divider()
+        if port.isLANExposed {
+            Button("Exposed to Local Network (\(port.displayAddress))", systemImage: "network.badge.shield.half.filled") {
+                showingDetails = true
+            }
+        } else {
+            Button("Localhost Only (\(port.address))", systemImage: "shield.lefthalf.filled") {
+                showingDetails = true
+            }
+        }
+        if let note = port.customNote {
+            Button("Copy Note (\(note.prefix(20))…)", systemImage: "note.text") {
+                copyToPasteboard(note)
+            }
         }
 
         Divider()
@@ -302,6 +341,11 @@ struct PortRowView: View {
 
     private func openInBrowser() {
         guard let url = port.localURL else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    private func openRoute(_ path: String) {
+        guard let url = port.routeURL(path: path) else { return }
         NSWorkspace.shared.open(url)
     }
 

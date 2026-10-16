@@ -12,6 +12,7 @@ struct ProcessDetailView: View {
 
     @State private var details = ProcessDetails()
     @State private var aliasText = ""
+    @State private var noteText = ""
     @State private var showingEnvVars = false
     @State private var showingRequestTester = false
     @State private var showingConnections = false
@@ -41,6 +42,7 @@ struct ProcessDetailView: View {
 
             Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 10, verticalSpacing: 4) {
                 aliasRow
+                exposureRow
                 if let lanURL = port.lanURL() {
                     lanURLRow(lanURL)
                 }
@@ -118,6 +120,10 @@ struct ProcessDetailView: View {
             }
             .font(.caption)
 
+            if port.networkProtocol == .tcp {
+                quickRoutesBar
+            }
+
             if port.networkProtocol == .tcp && !port.activeConnections.isEmpty {
                 Divider()
                 activeConnectionsSection
@@ -139,6 +145,9 @@ struct ProcessDetailView: View {
             }
 
             Divider()
+            notesSection
+
+            Divider()
 
             footerActions
         }
@@ -146,6 +155,7 @@ struct ProcessDetailView: View {
         .frame(width: (showingEnvVars || showingRequestTester || showingConnections) ? 440 : 360)
         .onAppear {
             aliasText = monitor.customAliases[port.port] ?? ""
+            noteText = monitor.customNotes[port.port] ?? ""
             details = ProcessInspector.details(
                 for: port.pid,
                 processName: port.processName,
@@ -192,6 +202,18 @@ struct ProcessDetailView: View {
                     .buttonStyle(.borderless)
                 }
             }
+        }
+    }
+
+    private var exposureRow: some View {
+        detailRow("Exposure") {
+            HStack(spacing: 5) {
+                Image(systemName: port.isLANExposed ? "network.badge.shield.half.filled" : "shield.lefthalf.filled")
+                    .foregroundStyle(port.isLANExposed ? .orange : .green)
+                Text(port.isLANExposed ? "LAN Exposed (\(port.displayAddress))" : "Localhost Only (\(port.address))")
+                    .foregroundStyle(port.isLANExposed ? .orange : .primary)
+            }
+            .help(port.exposureSecuritySummary)
         }
     }
 
@@ -422,6 +444,63 @@ struct ProcessDetailView: View {
                         .buttonStyle(.bordered)
                     }
                 }
+            }
+        }
+    }
+
+    private var quickRoutesBar: some View {
+        HStack(spacing: 5) {
+            Text("Routes:")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.secondary)
+            ForEach(["/", "/api", "/docs", "/swagger", "/graphql", "/health"], id: \.self) { r in
+                Button(r) {
+                    if let url = port.routeURL(path: r) {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .buttonStyle(.borderless)
+                .font(.system(.caption2, design: .monospaced))
+                .padding(.horizontal, 5)
+                .padding(.vertical, 1.5)
+                .background(.quaternary.opacity(0.5), in: .capsule)
+                .help("Open http://localhost:\(port.port)\(r)")
+            }
+        }
+    }
+
+    private var notesSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Label("Notes & Annotations", systemImage: "note.text")
+                    .font(.caption.weight(.semibold))
+
+                Spacer()
+
+                if !noteText.isEmpty {
+                    Button("Clear", role: .destructive) {
+                        noteText = ""
+                        monitor.setNote(nil, for: port.port)
+                    }
+                    .font(.caption2)
+                    .buttonStyle(.borderless)
+                }
+            }
+
+            HStack(spacing: 6) {
+                TextField("Add credentials, test accounts, or notes…", text: $noteText)
+                    .textFieldStyle(.roundedBorder)
+                    .font(.caption)
+                    .onSubmit {
+                        monitor.setNote(noteText, for: port.port)
+                    }
+
+                Button("Save") {
+                    monitor.setNote(noteText, for: port.port)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .font(.caption2)
             }
         }
     }

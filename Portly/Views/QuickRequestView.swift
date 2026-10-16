@@ -16,8 +16,10 @@ struct QuickRequestView: View {
     @State private var response: HTTPTestResponse?
     @State private var errorMessage: String?
     @State private var showingBodyEditor = false
+    @State private var showingHeaders = false
 
     private let methods = ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"]
+    private let commonRoutes = ["/", "/api", "/docs", "/swagger", "/graphql", "/health"]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -42,14 +44,63 @@ struct QuickRequestView: View {
                 .disabled(isSending)
             }
 
-            if ["POST", "PUT", "PATCH"].contains(method) {
-                DisclosureGroup("Request Body (JSON)", isExpanded: $showingBodyEditor) {
-                    TextEditor(text: $requestBody)
+            // Quick preset routes picker
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    Text("Presets:")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    ForEach(commonRoutes, id: \.self) { r in
+                        Button(r) {
+                            path = r
+                        }
+                        .buttonStyle(.borderless)
                         .font(.system(.caption2, design: .monospaced))
-                        .frame(height: 60)
-                        .background(.quaternary.opacity(0.3), in: .rect(cornerRadius: 4))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.quaternary.opacity(path == r ? 0.9 : 0.4), in: .capsule)
+                    }
                 }
-                .font(.caption2)
+            }
+
+            HStack {
+                if ["POST", "PUT", "PATCH"].contains(method) {
+                    Button(showingBodyEditor ? "Hide JSON Body" : "Edit JSON Body", systemImage: "text.alignleft") {
+                        showingBodyEditor.toggle()
+                    }
+                    .buttonStyle(.borderless)
+                    .font(.caption2)
+                }
+
+                Spacer()
+
+                Menu {
+                    ForEach(CodeSnippetLanguage.allCases) { lang in
+                        Button(lang.rawValue, systemImage: lang.icon) {
+                            let snippet = CodeSnippetGenerator.generate(
+                                language: lang,
+                                port: port.port,
+                                method: method,
+                                path: path,
+                                headers: [:],
+                                body: requestBody
+                            )
+                            copyToPasteboard(snippet)
+                        }
+                    }
+                } label: {
+                    Label("Copy Snippet", systemImage: "curlybraces")
+                        .font(.caption2)
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+            }
+
+            if showingBodyEditor && ["POST", "PUT", "PATCH"].contains(method) {
+                TextEditor(text: $requestBody)
+                    .font(.system(.caption2, design: .monospaced))
+                    .frame(height: 60)
+                    .background(.quaternary.opacity(0.3), in: .rect(cornerRadius: 4))
             }
 
             if let error = errorMessage {
@@ -100,6 +151,38 @@ struct QuickRequestView: View {
                 }
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
+                .font(.caption2)
+            }
+
+            if !resp.headers.isEmpty {
+                DisclosureGroup("Response Headers (\(resp.headers.count))", isExpanded: $showingHeaders) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack {
+                            Spacer()
+                            Button("Copy Headers", systemImage: "doc.on.doc") {
+                                let formatted = resp.headers.sorted(by: { $0.key < $1.key })
+                                    .map { "\($0.key): \($0.value)" }
+                                    .joined(separator: "\n")
+                                copyToPasteboard(formatted)
+                            }
+                            .font(.caption2)
+                            .buttonStyle(.borderless)
+                        }
+
+                        ForEach(resp.headers.keys.sorted(), id: \.self) { key in
+                            HStack(alignment: .top, spacing: 4) {
+                                Text(key + ":")
+                                    .font(.system(.caption2, design: .monospaced).weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                Text(resp.headers[key] ?? "")
+                                    .font(.system(.caption2, design: .monospaced))
+                                    .lineLimit(2)
+                                    .textSelection(.enabled)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
                 .font(.caption2)
             }
 

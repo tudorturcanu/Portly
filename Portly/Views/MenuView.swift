@@ -5,6 +5,34 @@
 
 import SwiftUI
 
+enum PortSortOrder: String, CaseIterable, Identifiable {
+    case portAsc = "Port (Low to High)"
+    case portDesc = "Port (High to Low)"
+    case name = "Process Name (A–Z)"
+    case connections = "Most Connections"
+    case exposure = "LAN Exposed First"
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .portAsc: return "arrow.up.circle"
+        case .portDesc: return "arrow.down.circle"
+        case .name: return "textformat"
+        case .connections: return "waveform.path.ecg"
+        case .exposure: return "network.badge.shield.half.filled"
+        }
+    }
+}
+
+enum PortQuickFilter: String, CaseIterable, Identifiable {
+    case all = "All"
+    case lanExposed = "LAN Exposed"
+    case docker = "Docker"
+
+    var id: String { rawValue }
+}
+
 /// The panel shown when clicking the menu bar icon.
 struct MenuView: View {
     var monitor: PortMonitor
@@ -13,6 +41,8 @@ struct MenuView: View {
 
     @AppStorage("showSystemProcesses") private var showSystemProcesses = false
     @AppStorage("showUDPPorts") private var showUDPPorts = false
+    @AppStorage("portSortOrder") private var sortOrder = PortSortOrder.portAsc
+    @State private var quickFilter = PortQuickFilter.all
     @State private var searchText = ""
     @State private var listHeight = 0.0
     @State private var confirmingStopAll = false
@@ -30,14 +60,45 @@ struct MenuView: View {
         if let activeProfile = DevProfileManager.shared.activeProfile {
             ports = ports.filter { activeProfile.ports.contains($0.port) }
         }
+        switch quickFilter {
+        case .all:
+            break
+        case .lanExposed:
+            ports = ports.filter { $0.isLANExposed }
+        case .docker:
+            ports = ports.filter { $0.containerName != nil || $0.isDockerBackend }
+        }
         if !searchText.isEmpty {
             ports = ports.filter {
                 $0.displayName.localizedStandardContains(searchText)
                     || String($0.port).contains(searchText)
                     || ($0.customAlias?.localizedStandardContains(searchText) ?? false)
+                    || ($0.customNote?.localizedStandardContains(searchText) ?? false)
                     || ($0.smartDescriptor?.localizedStandardContains(searchText) ?? false)
                     || ($0.hint?.localizedStandardContains(searchText) ?? false)
                     || $0.networkProtocol.rawValue.localizedStandardContains(searchText)
+            }
+        }
+        switch sortOrder {
+        case .portAsc:
+            ports.sort { $0.port < $1.port }
+        case .portDesc:
+            ports.sort { $0.port > $1.port }
+        case .name:
+            ports.sort { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+        case .connections:
+            ports.sort {
+                if $0.establishedConnections != $1.establishedConnections {
+                    return $0.establishedConnections > $1.establishedConnections
+                }
+                return $0.port < $1.port
+            }
+        case .exposure:
+            ports.sort {
+                if $0.isLANExposed != $1.isLANExposed {
+                    return $0.isLANExposed && !$1.isLANExposed
+                }
+                return $0.port < $1.port
             }
         }
         return ports
@@ -76,6 +137,11 @@ struct MenuView: View {
             if !DevProfileManager.shared.profiles.isEmpty {
                 Divider()
                 profilePickerBar
+            }
+
+            if quickFilter != .all {
+                Divider()
+                activeFilterBanner
             }
 
             Divider()
@@ -136,8 +202,70 @@ struct MenuView: View {
 
             Spacer()
 
+            sortAndFilterMenu
+
             settingsMenu
         }
+    }
+
+    private var sortAndFilterMenu: some View {
+        Menu {
+            Section("Sort By") {
+                ForEach(PortSortOrder.allCases) { order in
+                    Button {
+                        sortOrder = order
+                    } label: {
+                        if sortOrder == order {
+                            Label(order.rawValue, systemImage: "checkmark")
+                        } else {
+                            Label(order.rawValue, systemImage: order.icon)
+                        }
+                    }
+                }
+            }
+
+            Section("Filter") {
+                ForEach(PortQuickFilter.allCases) { filter in
+                    Button {
+                        quickFilter = filter
+                    } label: {
+                        if quickFilter == filter {
+                            Label(filter.rawValue, systemImage: "checkmark")
+                        } else {
+                            Text(filter.rawValue)
+                        }
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "arrow.up.arrow.down.circle")
+                .foregroundStyle((sortOrder != .portAsc || quickFilter != .all) ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(Color.secondary))
+        }
+        .menuStyle(.borderlessButton)
+        .fixedSize()
+        .help("Sort and filter ports (current: \(sortOrder.rawValue), \(quickFilter.rawValue))")
+    }
+
+    private var activeFilterBanner: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                .font(.caption2)
+                .foregroundStyle(.tint)
+            Text("Filter: \(quickFilter.rawValue)")
+                .font(.caption2.weight(.medium))
+            Spacer()
+            Button {
+                quickFilter = .all
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 4)
+        .background(Color.accentColor.opacity(0.08))
     }
 
     private var settingsMenu: some View {
